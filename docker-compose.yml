@@ -1,0 +1,38 @@
+version: '3'
+services:
+  db:
+    image: mysql:8.0.26
+    environment:
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - ./dbdata:/var/lib/mysql:z
+    ports:
+      - 3306:3306
+    networks:
+      - bot
+
+  discordbot:
+    image: discordbot
+    restart: on-failure
+    build:
+      context: src/bot
+      dockerfile: Dockerfile
+    environment:
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - TOKEN=${TOKEN}
+    volumes:
+      - ./src/bot:/src:z
+    networks:
+      - bot
+    depends_on:
+      - db
+
+networks:
+  bot:
+
+volumes:
+  dbdata:
