@@ -1,46 +1,40 @@
 const Sequelize = require('sequelize');
 
 function feedTableModel(seq) {
-  // CREATE TABLE {server_id}_feeds (
-  //   id INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
-  //   url VARCHAR(255) NOT NULL UNIQUE,
-  //   name VARCHAR(255) NOT NULL, -- いらないかも
-  //   thread_id VARCHAR(255) NOT NULL,
-  //   freq INT DEFAULT 1800,
-  //   last_update DATETIME DEFAULT 2023-01-01 00:00:00,
+  //  CREATE TABLE feed (
+  //   serial UNSIGHNED INT NOT NULL AUTO_INCREMENT PRIMARY KEY,  # 連番
+  //   server_id VARCHAR(32) NOT NULL,                            # discordのサーバID
+  //   dest_id VARCHAR(32),                                       # discordのチャンネルID OR スレッドID
+  //   rss_url VARCHAR(255) NOT NULL,                             # RSSのURL
+  //   webhook_url TEXT NOT NULL,                                 # webhookのURL
+  //   last_update DATETIME DEFAULT 2023-01-01 00:00:00,          # 最終更新日時
   // );
 
   const FeedTable = seq.define('feed', {
-    id: {
+    serial: {
       type: Sequelize.INTEGER.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
-    url: {
-      type: Sequelize.STRING(255),
+    server_id: {
+      type: Sequelize.STRING,
       allowNull: false,
     },
-    name: {
-      type: Sequelize.STRING(255),
+    dest_id: {
+      type: Sequelize.STRING,
+    },
+    rss_url: {
+      type: Sequelize.STRING,
       allowNull: false,
     },
-    thread_id: {
-      type: Sequelize.STRING(63),
+    webhook_url: {
+      type: Sequelize.TEXT,
       allowNull: false,
-    },
-    freq: {
-      type: Sequelize.INTEGER.UNSIGNED,
-      allowNull: false,
-      defaultValue: 1800,
     },
     last_update: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: '2023-01-01 00:00:00',
-    },
-    guild_id: {
-      type: Sequelize.STRING(63),
-      allowNull: false,
     },
   });
   return FeedTable;
