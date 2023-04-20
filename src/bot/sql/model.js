@@ -4,7 +4,8 @@ function feedTableModel(seq) {
   //  CREATE TABLE feed (
   //   serial UNSIGHNED INT NOT NULL AUTO_INCREMENT PRIMARY KEY,  # 連番
   //   server_id VARCHAR(32) NOT NULL,                            # discordのサーバID
-  //   dest_id VARCHAR(32),                                       # discordのチャンネルID OR スレッドID
+  //   channel_id VARCHAR(32) DEFAULT NULl,                       # discordのチャンネルID
+  //   thread_id VARCHAR(32) DEFAULT NULl,                        # discordのスレッドID
   //   rss_url VARCHAR(255) NOT NULL,                             # RSSのURL
   //   webhook_url TEXT NOT NULL,                                 # webhookのURL
   //   last_update DATETIME DEFAULT 2023-01-01 00:00:00,          # 最終更新日時
@@ -17,11 +18,18 @@ function feedTableModel(seq) {
       autoIncrement: true,
     },
     server_id: {
-      type: Sequelize.STRING,
+      type: Sequelize.STRING(32),
       allowNull: false,
     },
-    dest_id: {
-      type: Sequelize.STRING,
+    channel_id: {
+      type: Sequelize.STRING(32),
+      allowNull: true,
+      defaultValue: null,
+    },
+    thread_id: {
+      type: Sequelize.STRING(32),
+      allowNull: true,
+      defaultValue: null,
     },
     rss_url: {
       type: Sequelize.STRING,

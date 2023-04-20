@@ -1,4 +1,5 @@
 const Sequelize = require('sequelize');
+const { log } = require('../util/log.js');
 const feedTableModel = require('./model.js').feedTableModel;
 
 const SEQ = new Sequelize(
@@ -21,14 +22,33 @@ async function initFeedTable() {
 
 // listコマンドで使用
 // feedテーブルからthread_id, channel_idの一致するものを取得
-async function selectByChannel(destId) {
-  const FeedTable = await initFeedTable();
+async function selectByChannel(channelId, threadId) {
+  // validation
+  if (channelId !== null && threadId !== null) {
+    log(
+      'error',
+      'selectByChannel',
+      'channelId, threadIdが同時に指定されています',
+    );
+    return;
+  }
 
-  const rows = await FeedTable.findAll({
-    where: {
-      dest_id: destId,
-    },
-  });
+  const FeedTable = await initFeedTable();
+  let rows;
+
+  if (threadId !== null) {
+    rows = await FeedTable.findAll({
+      where: {
+        thread_id: threadId,
+      },
+    });
+  } else {
+    rows = await FeedTable.findAll({
+      where: {
+        channel_id: channelId,
+      },
+    });
+  }
   return rows;
 }
 
@@ -47,29 +67,77 @@ async function selectByServer(serverId) {
 
 // /registerコマンドで使用
 // feedテーブルにurlを追加
-async function insertFeedUrl(rssUrl, webhookUrl, serverId, destId) {
+async function insertFeedUrl(
+  rssUrl,
+  webhookUrl,
+  serverId,
+  channelId,
+  threadId,
+) {
+  // validation
+  if (channelId !== null && threadId !== null) {
+    log(
+      'error',
+      'selectByServer',
+      'channelId, threadIdが同時に指定されています',
+    );
+    return;
+  }
+
   const FeedTable = await initFeedTable();
 
-  await FeedTable.create({
-    rss_url: rssUrl,
-    webhook_url: webhookUrl,
-    server_id: serverId,
-    dest_id: destId,
-  });
+  if (threadId !== null) {
+    await FeedTable.create({
+      rss_url: rssUrl,
+      webhook_url: webhookUrl,
+      server_id: serverId,
+      thread_id: threadId,
+    });
+  } else {
+    await FeedTable.create({
+      rss_url: rssUrl,
+      webhook_url: webhookUrl,
+      server_id: serverId,
+      channel_id: channelId,
+    });
+  }
+
+  return;
 }
 
 // /unsubscribeコマンドで使用
 // feedテーブルからurlを削除
-async function deleteFeedUrl(rssUrl, serverId, destId) {
+async function deleteFeedUrl(rssUrl, serverId, channelId, threadId) {
+  // validation
+  if (channelId !== null && threadId !== null) {
+    log(
+      'error',
+      'deleteFeedUrl',
+      'channelId, threadIdが同時に指定されています',
+    );
+    return;
+  }
+
   const FeedTable = await initFeedTable();
 
-  await FeedTable.destroy({
-    where: {
-      rss_url: rssUrl,
-      server_id: serverId,
-      dest_id: destId,
-    },
-  });
+  if (threadId !== null) {
+    await FeedTable.destroy({
+      where: {
+        rss_url: rssUrl,
+        server_id: serverId,
+        thread_id: threadId,
+      },
+    });
+  } else {
+    await FeedTable.destroy({
+      where: {
+        rss_url: rssUrl,
+        server_id: serverId,
+        channel_id: channelId,
+      },
+    });
+  }
+  return;
 }
 
 // scraperで使用
