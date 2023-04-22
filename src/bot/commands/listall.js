@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-// const { selectByServer } = require('../sql/query.js');
+const { selectByServer } = require('../sql/query.js');
+
 module.exports = {
   data: new SlashCommandBuilder()
     .setName('listall')
@@ -8,10 +9,18 @@ module.exports = {
   async execute(interaction) {
     // TODO: 処理
     // DBからそのサーバの登録済みのRSSを取得
-    // 取得したRSSの一覧をフォーマットして返す
-    // feedsを チャンネル名のリンク: rssのURL の形式で表示する
+    const serverId = interaction.guildId;
+    let msg = '';
+    const feeds = await selectByServer(serverId);
     // 例: #general: https://example.com/rss.xml
-    await interaction.reply('このサーバの登録済みのRSSを表示する', {
+    for (let feed of feeds) {
+      let dest = feed.channel_id ? feed.channel_id : feed.thread_id;
+      msg += `<#${dest}>: ${feed.rss_url}\n`;
+    }
+    if (msg === '') {
+      msg = 'このサーバには何も登録されていません';
+    }
+    await interaction.reply(msg, {
       ephemeral: false,
     });
   },
