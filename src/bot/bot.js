@@ -15,21 +15,21 @@ const client = new Client({
 });
 client.commands = new Collection();
 
-// commandsディレクトリ以下のコマンドを読み込み，ファイル名を返す
-function getCommands() {
-  const cPath = path.join(__dirname, './commands');
-  let commandFiles = [];
-  fs.readdirSync(cPath)
-    .filter((filename) => filename.endsWith('.js'))
-    .forEach((filename) => {
-      commandFiles.push(path.join(cPath, filename));
-    });
-
-  return commandFiles;
-}
-
 // プログラム起動時，コマンドのセットアップ
 client.on('ready', async () => {
+  // commandsディレクトリ以下のコマンドを読み込み，ファイル名を返す
+  function getCommands() {
+    const cPath = path.join(__dirname, './commands');
+    let commandFiles = [];
+    fs.readdirSync(cPath)
+      .filter((filename) => filename.endsWith('.js'))
+      .forEach((filename) => {
+        commandFiles.push(path.join(cPath, filename));
+      });
+
+    return commandFiles;
+  }
+
   const commandFiles = getCommands();
   const commandsArr = [];
 
