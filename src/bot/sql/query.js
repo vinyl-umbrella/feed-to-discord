@@ -158,8 +158,31 @@ async function deleteFeed(rssUrl, serverId, channelId, threadId) {
 }
 
 // scraperで使用
+// feedテーブルからrss_urlのリストを取得
+async function selectAllFeed() {
+  const FeedTable = await initFeedTable();
+  const rows = await FeedTable.findAll({
+    attributes: ['serial', 'rss_url', 'webhook_url', 'last_update'],
+  });
+  return rows;
+}
+
+// scraperで使用
 // feedテーブルからlast_updateを更新
-// async function updateLastUpdate(rssUrl, newLastUpdate)
+async function updateLastUpdateDT(serial, newLastUpdate) {
+  const FeedTable = await initFeedTable();
+  await FeedTable.update(
+    {
+      last_update: newLastUpdate,
+    },
+    {
+      where: {
+        serial: serial,
+      },
+    },
+  );
+  return;
+}
 
 module.exports = {
   selectByChannel,
@@ -167,4 +190,6 @@ module.exports = {
   selectByUrl,
   registerFeed,
   deleteFeed,
+  selectAllFeed,
+  updateLastUpdateDT,
 };
