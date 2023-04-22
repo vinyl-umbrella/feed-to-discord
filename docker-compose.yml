@@ -14,7 +14,7 @@ services:
       - ./db/data:/var/lib/mysql:z
       - ./db/conf:/etc/mysql/conf.d:z
     ports:
-      - 3306:3306
+      - ${DB_PORT}:3306
     networks:
       - bot
 
@@ -30,6 +30,7 @@ services:
       - MYSQL_USER=${DB_USER}
       - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_PORT=${DB_PORT}
       - TOKEN=${TOKEN}
       - TZ=Asia/Tokyo
     volumes:
