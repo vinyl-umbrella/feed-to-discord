@@ -67,20 +67,10 @@ async function selectByServer(serverId) {
 
 // /registerコマンドで使用
 // feedテーブルにurlを追加
-async function insertFeedUrl(
-  rssUrl,
-  webhookUrl,
-  serverId,
-  channelId,
-  threadId,
-) {
+async function registerFeed(rssUrl, webhookUrl, serverId, channelId, threadId) {
   // validation
   if (channelId !== null && threadId !== null) {
-    log(
-      'error',
-      'selectByServer',
-      'channelId, threadIdが同時に指定されています',
-    );
+    log('error', 'registerFeed', 'channelId, threadIdが同時に指定されています');
     return;
   }
 
@@ -107,14 +97,10 @@ async function insertFeedUrl(
 
 // /unsubscribeコマンドで使用
 // feedテーブルからurlを削除
-async function deleteFeedUrl(rssUrl, serverId, channelId, threadId) {
+async function deleteFeed(rssUrl, serverId, channelId, threadId) {
   // validation
   if (channelId !== null && threadId !== null) {
-    log(
-      'error',
-      'deleteFeedUrl',
-      'channelId, threadIdが同時に指定されています',
-    );
+    log('error', 'deleteFeed', 'channelId, threadIdが同時に指定されています');
     return;
   }
 
@@ -147,6 +133,6 @@ async function deleteFeedUrl(rssUrl, serverId, channelId, threadId) {
 module.exports = {
   selectByChannel,
   selectByServer,
-  insertFeedUrl,
-  deleteFeedUrl,
+  registerFeed,
+  deleteFeed,
 };
