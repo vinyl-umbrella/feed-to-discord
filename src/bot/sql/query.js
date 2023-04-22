@@ -20,7 +20,7 @@ async function initFeedTable() {
   return FeedTable;
 }
 
-// listコマンドで使用
+// /listコマンドで使用
 // feedテーブルからthread_id, channel_idの一致するものを取得
 async function selectByChannel(channelId, threadId) {
   // validation
@@ -50,6 +50,37 @@ async function selectByChannel(channelId, threadId) {
     });
   }
   return rows;
+}
+
+// /unsubscribeコマンドで使用
+// feedテーブルからurlが一致するものがあるか判定
+async function selectByUrl(rssUrl, channelId, threadId) {
+  // validation
+  if (channelId !== null && threadId !== null) {
+    log('error', 'selectByUrl', 'channelId, threadIdが同時に指定されています');
+    return;
+  }
+
+  const FeedTable = await initFeedTable();
+  let rows;
+
+  if (threadId !== null) {
+    rows = await FeedTable.findAll({
+      where: {
+        rss_url: rssUrl,
+        thread_id: threadId,
+      },
+    });
+  } else {
+    rows = await FeedTable.findAll({
+      where: {
+        rss_url: rssUrl,
+        channel_id: channelId,
+      },
+    });
+  }
+  // 一致するものがあれば，trueを返す
+  return rows.length > 0;
 }
 
 // /listallコマンドで使用
@@ -133,6 +164,7 @@ async function deleteFeed(rssUrl, serverId, channelId, threadId) {
 module.exports = {
   selectByChannel,
   selectByServer,
+  selectByUrl,
   registerFeed,
   deleteFeed,
 };
