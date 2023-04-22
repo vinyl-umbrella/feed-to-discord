@@ -23,7 +23,7 @@ services:
     image: discordbot
     restart: on-failure:5
     build:
-      context: src/bot
+      context: src
       dockerfile: Dockerfile
     environment:
       - MYSQL_HOST=db
@@ -34,7 +34,7 @@ services:
       - TOKEN=${TOKEN}
       - TZ=Asia/Tokyo
     volumes:
-      - ./src/bot:/src:z
+      - ./src:/src:z
     networks:
       - bot
     depends_on:
