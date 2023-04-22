@@ -83,6 +83,20 @@ async function selectByUrl(rssUrl, channelId, threadId) {
   return rows.length > 0;
 }
 
+// /registerコマンドで使用
+// すでにそのサーバで登録されているか判定
+async function selectByUrlServer(rssUrl, serverId) {
+  const FeedTable = await initFeedTable();
+  const rows = await FeedTable.findAll({
+    attributes: ['rss_url', 'server_id', 'channel_id', 'thread_id'],
+    where: {
+      rss_url: rssUrl,
+      server_id: serverId,
+    },
+  });
+  return rows;
+}
+
 // /listallコマンドで使用
 // feedテーブルからserver_idの一致するものを取得
 async function selectByServer(serverId) {
@@ -188,6 +202,7 @@ module.exports = {
   selectByChannel,
   selectByServer,
   selectByUrl,
+  selectByUrlServer,
   registerFeed,
   deleteFeed,
   selectAllFeed,

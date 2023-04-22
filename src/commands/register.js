@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
-const { registerFeed } = require('../sql/query.js');
+const { registerFeed, selectByUrlServer } = require('../sql/query.js');
+const { canParseRSS } = require('../util/scrape-helper.js');
 
 getWebhookUrl = async (interaction) => {
   let channelId = interaction.channelId;
@@ -51,17 +52,35 @@ module.exports = {
     ),
   // TODO: オプションを追加する．(頻度), (favicon)
   async execute(interaction) {
-    // TODO: 登録処理
+    const inputUrl = interaction.options.getString('url');
     // まずURLが正しいか確認
-    // (URLが正しいかどうかは，RSSを取得してみて，エラーが出ないかで判断する)
+    if (!canParseRSS(inputUrl)) {
+      await interaction.reply('入力されたURLが正しくありません', {
+        ephemeral: true,
+      });
+      return;
+    }
+
     // 次に，既にそのサーバで登録されていないか確認
-    //   既に登録されていたら，エラーを返す
+    const alreadyRegistered = await selectByUrlServer(
+      inputUrl,
+      interaction.guildId,
+    );
+    if (alreadyRegistered.length > 0) {
+      let dest = alreadyRegistered[0].channel_id
+        ? alreadyRegistered[0].channel_id
+        : alreadyRegistered[0].thread_id;
+      await interaction.reply(`${inputUrl} は <#${dest}>に登録されています`, {
+        ephemeral: true,
+      });
+      return;
+    }
 
     const Hook = await getWebhookUrl(interaction);
     try {
       // DBに挿入する
       registerFeed(
-        interaction.options.getString('url'),
+        inputUrl,
         Hook.hookUrl,
         interaction.guildId,
         Hook.channelId,
@@ -74,9 +93,6 @@ module.exports = {
     }
 
     // 登録完了を返す
-    await interaction.reply(
-      `登録しました: ${interaction.options.getString('url')}`,
-      { ephemeral: false },
-    );
+    await interaction.reply(`登録しました: ${inputUrl}`, { ephemeral: false });
   },
 };

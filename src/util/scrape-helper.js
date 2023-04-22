@@ -6,6 +6,16 @@ async function scrapeRSS(url) {
   return feed;
 }
 
+async function canParseRSS(url) {
+  const parser = new Parser();
+  try {
+    await parser.parseURL(url);
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
 async function sleep(seconds) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
@@ -33,6 +43,7 @@ async function post2Discord(hook, sitename, link) {
 
 module.exports = {
   scrapeRSS,
+  canParseRSS,
   sleep,
   post2Discord,
 };
