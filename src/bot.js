@@ -9,6 +9,7 @@ const {
 const fs = require('node:fs');
 const path = require('node:path');
 const { log } = require('./util/log');
+const { scrape } = require('./scrape');
 
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildWebhooks],
@@ -66,3 +67,7 @@ client.on(Events.InteractionCreate, async (interraction) => {
 });
 
 client.login(process.env.TOKEN);
+
+setInterval(async () => {
+  await scrape();
+}, 600000);

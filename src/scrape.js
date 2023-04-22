@@ -1,7 +1,7 @@
 const { selectAllFeed, updateLastUpdateDT } = require('./sql/query.js');
 const { scrapeRSS, sleep, post2Discord } = require('./util/scrape-helper.js');
 
-setInterval(async () => {
+async function scrape() {
   // dbからRSS_URLの一覧を取得
   const rows = await selectAllFeed();
   // 各URLに対して
@@ -22,8 +22,8 @@ setInterval(async () => {
       } else {
         // 公開日が最終更新日時より古ければ
         // 何もしない
-        console.log('old');
       }
     }
   }
-}, 600000);
+}
+module.exports = { scrape };

@@ -13,8 +13,6 @@ services:
     volumes:
       - ./db/data:/var/lib/mysql:z
       - ./db/conf:/etc/mysql/conf.d:z
-    ports:
-      - ${DB_PORT}:3306
     networks:
       - bot
 
@@ -25,6 +23,7 @@ services:
     build:
       context: src
       dockerfile: Dockerfile
+    entrypoint: ["npm", "run", "start"]
     environment:
       - MYSQL_HOST=db
       - MYSQL_USER=${DB_USER}

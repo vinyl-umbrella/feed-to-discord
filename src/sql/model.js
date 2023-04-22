@@ -42,7 +42,7 @@ function feedTableModel(seq) {
     last_update: {
       type: Sequelize.DATE,
       allowNull: false,
-      defaultValue: '2023-01-01 00:00:00',
+      defaultValue: '2023-04-22 00:00:00',
     },
   });
   return FeedTable;
