@@ -11,7 +11,7 @@ module.exports = {
     const serverId = interaction.guildId;
     let msg = '';
     const feeds = await selectByServer(serverId);
-    // 例: #general: https://example.com/rss.xml
+    // TODO: #general: SITENAME, https://example.com/rss.xml
     for (let feed of feeds) {
       let dest = feed.channel_id ? feed.channel_id : feed.thread_id;
       msg += `<#${dest}>: ${feed.rss_url}\n`;
@@ -21,6 +21,7 @@ module.exports = {
     }
     await interaction.reply(msg, {
       ephemeral: false,
+      split: true,
     });
   },
 };

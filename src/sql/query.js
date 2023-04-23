@@ -10,6 +10,7 @@ const SEQ = new Sequelize(
     host: process.env.MYSQL_HOST,
     port: process.env.MYSQL_PORT,
     dialect: 'mysql',
+    logging: false,
   },
 );
 
@@ -25,11 +26,7 @@ async function initFeedTable() {
 async function selectByChannel(channelId, threadId) {
   // validation
   if (channelId !== null && threadId !== null) {
-    log(
-      'error',
-      'selectByChannel',
-      'channelId, threadIdが同時に指定されています',
-    );
+    log('error selectByChannel channelId, threadIdが同時に指定されています');
     return;
   }
 
@@ -57,7 +54,7 @@ async function selectByChannel(channelId, threadId) {
 async function selectByUrl(rssUrl, channelId, threadId) {
   // validation
   if (channelId !== null && threadId !== null) {
-    log('error', 'selectByUrl', 'channelId, threadIdが同時に指定されています');
+    log('error selectByUrl channelId, threadIdが同時に指定されています');
     return;
   }
 
@@ -115,7 +112,7 @@ async function selectByServer(serverId) {
 async function registerFeed(rssUrl, webhookUrl, serverId, channelId, threadId) {
   // validation
   if (channelId !== null && threadId !== null) {
-    log('error', 'registerFeed', 'channelId, threadIdが同時に指定されています');
+    log('error registerFeed channelId, threadIdが同時に指定されています');
     return;
   }
 
@@ -145,7 +142,7 @@ async function registerFeed(rssUrl, webhookUrl, serverId, channelId, threadId) {
 async function deleteFeed(rssUrl, serverId, channelId, threadId) {
   // validation
   if (channelId !== null && threadId !== null) {
-    log('error', 'deleteFeed', 'channelId, threadIdが同時に指定されています');
+    log('error deleteFeed channelId, threadIdが同時に指定されています');
     return;
   }
 

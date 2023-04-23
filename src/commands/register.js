@@ -54,7 +54,8 @@ module.exports = {
   async execute(interaction) {
     const inputUrl = interaction.options.getString('url');
     // まずURLが正しいか確認
-    if (!canParseRSS(inputUrl)) {
+    const canParse = await canParseRSS(inputUrl);
+    if (!canParse) {
       await interaction.reply('入力されたURLが正しくありません', {
         ephemeral: true,
       });

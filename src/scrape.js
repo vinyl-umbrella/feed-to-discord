@@ -8,6 +8,10 @@ async function scrape() {
   for (let row of rows) {
     // rssを取得
     const feed = await scrapeRSS(row.rss_url);
+    if (!feed.items) {
+      continue;
+    }
+
     await sleep(1);
     // 各記事に対して
     for (let item of feed.items.reverse()) {
@@ -15,7 +19,8 @@ async function scrape() {
       if (Date.parse(item.isoDate) > Date.parse(row.last_update)) {
         // 公開日が最終更新日時より新しければ
         // webhookに投げる
-        await post2Discord(row.webhook_url, feed.title, item.link);
+        const title = feed.title ? feed.title : 'rss';
+        await post2Discord(row.webhook_url, title, item.link);
         // DBの最終更新日時を更新
         await updateLastUpdateDT(row.serial, item.isoDate);
         await sleep(1);

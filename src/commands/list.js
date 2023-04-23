@@ -29,6 +29,7 @@ module.exports = {
 
     await interaction.reply(msg, {
       ephemeral: false,
+      split: true,
     });
   },
 };

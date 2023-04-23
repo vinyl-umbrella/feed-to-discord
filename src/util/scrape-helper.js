@@ -1,13 +1,28 @@
 const Parser = require('rss-parser');
+const { log } = require('./log');
+
+const headers = {
+  Accept:
+    'ext/html,application/xhtml+xml,application/xml,application/rss+xml,application/atom+xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+};
 
 async function scrapeRSS(url) {
-  const parser = new Parser();
-  const feed = await parser.parseURL(url);
-  return feed;
+  const parser = new Parser({
+    headers: headers,
+  });
+  try {
+    const feed = await parser.parseURL(url);
+    return feed;
+  } catch (e) {
+    log(`error scrapeRSS: ${url}, ${e}`);
+    return {};
+  }
 }
 
 async function canParseRSS(url) {
-  const parser = new Parser();
+  const parser = new Parser({
+    headers: headers,
+  });
   try {
     await parser.parseURL(url);
     return true;
@@ -21,6 +36,12 @@ async function sleep(seconds) {
 }
 
 async function post2Discord(hook, sitename, link) {
+  // もし link のドメインが"nitter.net"であれば"vxtwitter.com"にreplace
+  const articleDomain = new URL(link).hostname;
+  if (articleDomain === 'nitter.net') {
+    link = link.replace('nitter.net', 'vxtwitter.com');
+  }
+
   const res = await fetch(hook, {
     method: 'POST',
     headers: {
