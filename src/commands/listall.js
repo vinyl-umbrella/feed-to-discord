@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { selectByServer } = require('../sql/query.js');
+const { log } = require('../util/log.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -7,6 +8,7 @@ module.exports = {
     .setDescription('このサーバの登録済みのRSSを表示する'),
 
   async execute(interaction) {
+    log('INFO', `${interaction.guildId} /listall`);
     // DBからそのサーバの登録済みのRSSを取得
     const serverId = interaction.guildId;
     let msg = '';

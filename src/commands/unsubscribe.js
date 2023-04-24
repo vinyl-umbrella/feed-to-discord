@@ -1,5 +1,6 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { selectByUrl, deleteFeed } = require('../sql/query.js');
+const { log } = require('../util/log.js');
 
 module.exports = {
   data: new SlashCommandBuilder()
@@ -9,6 +10,12 @@ module.exports = {
       option.setName('url').setDescription('RSSのURL').setRequired(true),
     ),
   async execute(interaction) {
+    log(
+      'INFO',
+      `${interaction.guildId} /unsubscribe ${interaction.options.getString(
+        'url',
+      )}}`,
+    );
     let channelId = interaction.channelId;
     let threadId = null;
 

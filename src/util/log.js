@@ -5,11 +5,11 @@ function now() {
   let h = ('00' + dt.getHours()).slice(-2);
   let min = ('00' + dt.getMinutes()).slice(-2);
   let s = ('00' + dt.getSeconds()).slice(-2);
-  return `${dt.getFullYear()}-${m}/${d} ${h}:${min}:${s}`;
+  return `[${dt.getFullYear()}-${m}/${d} ${h}:${min}:${s}]`;
 }
 
-function log(x) {
-  console.log(`${now()} ${x}`);
+function log(level, x) {
+  console.log(`${now()}\t${level}\t${x}`);
 }
 
 module.exports = { log };

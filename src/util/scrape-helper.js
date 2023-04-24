@@ -1,32 +1,35 @@
 const Parser = require('rss-parser');
 const { log } = require('./log');
 
-const headers = {
+const Headers = {
   Accept:
     'ext/html,application/xhtml+xml,application/xml,application/rss+xml,application/atom+xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
 };
 
 async function scrapeRSS(url) {
   const parser = new Parser({
-    headers: headers,
+    headers: Headers,
+    timeout: 10000,
   });
   try {
     const feed = await parser.parseURL(url);
     return feed;
   } catch (e) {
-    log(`error scrapeRSS: ${url}, ${e}`);
+    log('ERROR', `at scrapeRSS(): ${url}, ${e}`);
     return {};
   }
 }
 
 async function canParseRSS(url) {
   const parser = new Parser({
-    headers: headers,
+    headers: Headers,
+    timeout: 10000,
   });
   try {
     await parser.parseURL(url);
     return true;
   } catch (e) {
+    log('ERROR', `at canParseRSS(): ${url}, ${e}`);
     return false;
   }
 }
@@ -55,7 +58,7 @@ async function post2Discord(hook, sitename, link) {
   });
   if (!res.ok) {
     throw new Error(
-      `status code: ${res.status}\n post2Discord: ${link}, ${hook}`,
+      `at post2Discord(): status ${res.status}\n ${link}, ${hook}`,
     );
   }
 

@@ -49,7 +49,7 @@ client.on('ready', async () => {
     body: commandsArr,
   });
 
-  log("I'm ready!");
+  log('INFO', "I'm ready!");
 });
 
 // スラッシュコマンドを実行
@@ -57,12 +57,12 @@ client.on(Events.InteractionCreate, async (interraction) => {
   if (!interraction.isCommand()) return;
 
   const command = interraction.client.commands.get(interraction.commandName);
-  if (!command) log(`Command ${interraction.commandName} not found`);
+  if (!command) log('ERROR', `Command ${interraction.commandName} not found`);
 
   try {
     await command.execute(interraction);
   } catch (e) {
-    log(e);
+    log('ERROR', e);
   }
 });
 

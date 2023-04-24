@@ -1,6 +1,7 @@
 const { SlashCommandBuilder } = require('discord.js');
 const { registerFeed, selectByUrlServer } = require('../sql/query.js');
 const { canParseRSS } = require('../util/scrape-helper.js');
+const { log } = require('../util/log.js');
 
 getWebhookUrl = async (interaction) => {
   let channelId = interaction.channelId;
@@ -52,6 +53,12 @@ module.exports = {
     ),
   // TODO: オプションを追加する．(頻度), (favicon)
   async execute(interaction) {
+    log(
+      'INFO',
+      `${interaction.guildId} /register ${interaction.options.getString(
+        'url',
+      )}}`,
+    );
     const inputUrl = interaction.options.getString('url');
     // まずURLが正しいか確認
     const canParse = await canParseRSS(inputUrl);
@@ -89,7 +96,7 @@ module.exports = {
       );
     } catch (e) {
       await interaction.reply('登録処理に失敗しました', { ephemeral: true });
-      // console.warn(e);
+      log('WARN', `/register ${e}`);
       return;
     }
 
