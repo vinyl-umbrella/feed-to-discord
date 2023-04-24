@@ -12,7 +12,6 @@ services:
       - TZ=Asia/Tokyo
     volumes:
       - ./db/data:/var/lib/mysql:z
-      - ./db/conf:/etc/mysql/conf.d:z
     networks:
       - bot
 
@@ -33,6 +32,7 @@ services:
       - TOKEN=${TOKEN}
       - TZ=Asia/Tokyo
     volumes:
+      - "/src/node_modules"
       - ./src:/src:z
     networks:
       - bot
