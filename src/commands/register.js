@@ -28,9 +28,8 @@ getWebhookUrl = async (interaction) => {
     hookUrl = hooks.first().url;
   } else {
     // ない場合，webhookを作成して，そのURLを取得
-    // TODO: nameをRSS_チャンネルIDにしたい
     const hook = await interaction.channel.createWebhook({
-      name: 'RSS',
+      name: `RSS_${interaction.channelId}`,
       reason: 'F2D bot',
     });
     hookUrl = hook.url;

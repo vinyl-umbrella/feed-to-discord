@@ -109,6 +109,10 @@ async function selectByServer(serverId) {
     where: {
       server_id: serverId,
     },
+    order: [
+      ['channel_id', 'DESC'],
+      ['rss_url', 'ASC'],
+    ],
   });
   return rows;
 }
