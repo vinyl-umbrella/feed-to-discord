@@ -42,7 +42,11 @@ async function post2Discord(hook, sitename, link) {
   // もし link のドメインが"nitter.net"であれば"vxtwitter.com"にreplace
   const articleDomain = new URL(link).hostname;
   if (articleDomain === 'nitter.net') {
+    // TODO: vxtwitter.com vx twitter.com  どっちがいいんだろう？
     link = link.replace('nitter.net', 'vxtwitter.com');
+    if (link.endsWith('#m')) {
+      link = link.slice(0, -2);
+    }
   }
 
   const res = await fetch(hook, {
@@ -51,7 +55,7 @@ async function post2Discord(hook, sitename, link) {
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      username: sitename,
+      username: `${sitename}_F2D`,
       // avatar_url: 'https://www.google.com/favicon.ico',
       content: `${link}`,
     }),

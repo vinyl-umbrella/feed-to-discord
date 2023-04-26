@@ -14,7 +14,7 @@ module.exports = {
       'INFO',
       `${interaction.guildId} /unsubscribe ${interaction.options.getString(
         'url',
-      )}}`,
+      )}`,
     );
     let channelId = interaction.channelId;
     let threadId = null;

@@ -56,7 +56,7 @@ module.exports = {
       'INFO',
       `${interaction.guildId} /register ${interaction.options.getString(
         'url',
-      )}}`,
+      )}`,
     );
     const inputUrl = interaction.options.getString('url');
     // まずURLが正しいか確認
