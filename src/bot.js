@@ -68,6 +68,8 @@ client.on(Events.InteractionCreate, async (interraction) => {
 
 client.login(process.env.TOKEN);
 
-setInterval(async () => {
+// 10minごとにスクレイピング
+while (true) {
   await scrape();
-}, 600000);
+  await new Promise((resolve) => setTimeout(resolve, 600000));
+}
