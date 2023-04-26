@@ -66,10 +66,13 @@ client.on(Events.InteractionCreate, async (interraction) => {
   }
 });
 
-client.login(process.env.TOKEN);
-
-// 10minごとにスクレイピング
-while (true) {
-  await scrape();
-  await new Promise((resolve) => setTimeout(resolve, 600000));
+async function main() {
+  // 10minごとにスクレイピング
+  while (true) {
+    await scrape();
+    await new Promise((resolve) => setTimeout(resolve, 600000));
+  }
 }
+
+client.login(process.env.TOKEN);
+main();

@@ -29,9 +29,13 @@ module.exports = {
       msg = 'このチャンネルには何も登録されていません';
     }
 
-    await interaction.reply(msg, {
-      ephemeral: false,
-      split: true,
-    });
+    // 2000文字を超える場合は分割して送信
+    if (msg.length > 2000) {
+      await interaction.reply('-------- very long msg --------');
+      await sendSplittedMsg(interaction.channel, msg);
+      return;
+    }
+
+    await interaction.reply(msg);
   },
 };
