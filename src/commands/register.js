@@ -3,15 +3,17 @@ const { registerFeed, selectByUrlServer } = require('../sql/query.js');
 const { canParseRSS } = require('../util/scrape-helper.js');
 const { log } = require('../util/log.js');
 
-getWebhookUrl = async (interaction) => {
+async function getWebhookUrl(interaction) {
   let channelId = interaction.channelId;
   let threadId = null;
   let hooks = null;
   let hookUrl = null;
+  let isThread = false;
 
   // スレッドから呼ばれた場合
   // 親のチャンネルのID, スレッドのID, 親のwebhookを取得
   if (interaction.channel.type === 11) {
+    isThread = true;
     channelId = null;
     threadId = interaction.channelId;
     hooks = await interaction.channel.parent.fetchWebhooks();
@@ -28,10 +30,18 @@ getWebhookUrl = async (interaction) => {
     hookUrl = hooks.first().url;
   } else {
     // ない場合，webhookを作成して，そのURLを取得
-    const hook = await interaction.channel.createWebhook({
-      name: `RSS_${interaction.channelId}`,
-      reason: 'F2D bot',
-    });
+    let hook = null;
+    if (isThread) {
+      hook = await interaction.channel.parent.createWebhook({
+        name: `RSS_${interaction.channel.parent.id}`,
+        reason: 'F2D bot',
+      });
+    } else {
+      hook = await interaction.channel.createWebhook({
+        name: `RSS_${interaction.channelId}`,
+        reason: 'F2D bot',
+      });
+    }
     hookUrl = hook.url;
   }
 
@@ -41,7 +51,7 @@ getWebhookUrl = async (interaction) => {
     hookUrl += `?thread_id=${threadId}`;
   }
   return { hookUrl: hookUrl, channelId: channelId, threadId: threadId };
-};
+}
 
 module.exports = {
   data: new SlashCommandBuilder()
