@@ -3,7 +3,7 @@ const { log } = require('./log');
 
 const Headers = {
   Accept:
-    'ext/html,application/xhtml+xml,application/xml,application/rss+xml,application/atom+xml;q=0.9,image/webp,image/apng,*/*;q=0.8',
+    'ext/html,application/xhtml+xml,application/xml,application/rss+xml,application/atom+xml;q=0.9,*/*;q=0.8',
 };
 
 async function scrapeRSS(url) {
