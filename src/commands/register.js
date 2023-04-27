@@ -62,13 +62,8 @@ module.exports = {
     ),
   // TODO: オプションを追加する．(頻度), (favicon)
   async execute(interaction) {
-    log(
-      'INFO',
-      `${interaction.guildId} /register ${interaction.options.getString(
-        'url',
-      )}`,
-    );
     const inputUrl = interaction.options.getString('url');
+    log('INFO', `${interaction.guildId} /register ${inputUrl}`);
     // まずURLが正しいか確認
     const canParse = await canParseRSS(inputUrl);
     if (!canParse) {
@@ -110,6 +105,8 @@ module.exports = {
     }
 
     // 登録完了を返す
-    await interaction.reply(`登録しました: ${inputUrl}`, { ephemeral: false });
+    await interaction.reply(`${inputUrl}\nを登録しました`, {
+      ephemeral: false,
+    });
   },
 };

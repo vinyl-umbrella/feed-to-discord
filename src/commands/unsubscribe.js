@@ -48,6 +48,6 @@ module.exports = {
       threadId,
     );
 
-    await interaction.reply('RSSを削除しました', { ephemeral: false });
+    await interaction.reply('購読を解除しました', { ephemeral: false });
   },
 };

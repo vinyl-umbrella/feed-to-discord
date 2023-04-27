@@ -19,8 +19,9 @@ async function scrape() {
       if (Date.parse(item.isoDate) > Date.parse(row.last_update)) {
         // 公開日が最終更新日時より新しければ
         // webhookに投げる
-        const title = feed.title ? feed.title : 'rss';
-        await post2Discord(row.webhook_url, title, item.link);
+        const Sitename = feed.title ? feed.title : 'rss';
+        const ItemTitle = item.title ? item.title : 'no title';
+        await post2Discord(row.webhook_url, Sitename, ItemTitle, item.link);
         // DBの最終更新日時を更新
         await updateLastUpdateDT(row.serial, item.isoDate);
         await sleep(1);

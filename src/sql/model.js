@@ -8,7 +8,7 @@ function feedTableModel(seq) {
   //   thread_id VARCHAR(32) DEFAULT NULl,                        # discordのスレッドID
   //   rss_url VARCHAR(255) NOT NULL,                             # RSSのURL
   //   webhook_url TEXT NOT NULL,                                 # webhookのURL
-  //   last_update DATETIME DEFAULT 2023-01-01 00:00:00,          # 最終更新日時
+  //   last_update DATETIME DEFAULT current_timestamp             # 最終更新日時
   // );
 
   const FeedTable = seq.define('feed', {
@@ -42,7 +42,7 @@ function feedTableModel(seq) {
     last_update: {
       type: Sequelize.DATE,
       allowNull: false,
-      defaultValue: '2023-04-22 00:00:00',
+      defaultValue: Sequelize.NOW,
     },
   });
   return FeedTable;

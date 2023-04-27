@@ -38,7 +38,7 @@ async function sleep(seconds) {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-async function post2Discord(hook, sitename, link) {
+async function post2Discord(hook, sitename, title, link) {
   // もし link のドメインが"nitter.net"であれば"vxtwitter.com"にreplace
   const articleDomain = new URL(link).hostname;
   if (articleDomain === 'nitter.net') {
@@ -57,7 +57,7 @@ async function post2Discord(hook, sitename, link) {
     body: JSON.stringify({
       username: `${sitename}_F2D`,
       // avatar_url: 'https://www.google.com/favicon.ico',
-      content: `${link}`,
+      content: `${title}, ${link}`,
     }),
   });
   if (!res.ok) {
