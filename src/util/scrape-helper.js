@@ -39,11 +39,11 @@ async function sleep(seconds) {
 }
 
 async function post2Discord(hook, sitename, title, link) {
-  // もし link のドメインが"nitter.net"であれば"vxtwitter.com"にreplace
+  // もし link のドメインが"nitter.it"であれば"vxtwitter.com"にreplace
   const articleDomain = new URL(link).hostname;
-  if (articleDomain === 'nitter.net') {
+  if (articleDomain === 'nitter.it') {
     // TODO: vxtwitter.com vx twitter.com  どっちがいいんだろう？
-    link = link.replace('nitter.net', 'vxtwitter.com');
+    link = link.replace('nitter.it', 'vxtwitter.com');
     if (link.endsWith('#m')) {
       link = link.slice(0, -2);
     }
