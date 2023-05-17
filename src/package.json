@@ -12,7 +12,6 @@
   "license": "MIT",
   "dependencies": {
     "discord.js": "^14.8.0",
-    "feedparser": "^2.2.10",
     "mysql2": "^3.2.0",
     "rss-parser": "^3.13.0",
     "sequelize": "^6.29.3"
