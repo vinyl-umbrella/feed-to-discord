@@ -18,7 +18,7 @@ services:
   discordbot:
     container_name: F2D-BOT
     image: discordbot
-    restart: on-failure:5
+    restart: always
     build:
       context: src
       dockerfile: Dockerfile
