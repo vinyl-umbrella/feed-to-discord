@@ -1,22 +1,19 @@
-version: '3'
 services:
   db:
     restart: on-failure:5
-    image: mysql:8.0
+    image: mysql:8.3.0
     environment:
       - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
       - MYSQL_USER=${DB_USER}
       - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_PASSWORD=${DB_PASSWORD}
       - TZ=Asia/Tokyo
-    # volumes:
-    #   - ./db/data:/var/lib/mysql
-    networks:
-      - bot
+    volumes:
+      - dbdata:/var/lib/mysql
 
   discordbot:
     image: discordbot
-    restart: always
+    restart: unless-stopped
     build:
       context: app
       dockerfile: Dockerfile
@@ -29,10 +26,8 @@ services:
       - MYSQL_PORT=${DB_PORT}
       - TOKEN=${TOKEN}
       - TZ=Asia/Tokyo
-    networks:
-      - bot
     depends_on:
       - db
 
-networks:
-  bot:
+volumes:
+  dbdata:
