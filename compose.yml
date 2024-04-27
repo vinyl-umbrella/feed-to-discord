@@ -3,10 +3,10 @@ services:
     restart: on-failure:5
     image: mysql:8.3.0
     environment:
-      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
       - MYSQL_USER=${DB_USER}
-      - MYSQL_DATABASE=${DB_DATABASE}
       - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_DATABASE}
       - TZ=Asia/Tokyo
     volumes:
       - dbdata:/var/lib/mysql
@@ -19,11 +19,11 @@ services:
       dockerfile: Dockerfile
     entrypoint: ["npm", "run", "start"]
     environment:
-      - MYSQL_HOST=db
-      - MYSQL_USER=${DB_USER}
-      - MYSQL_DATABASE=${DB_DATABASE}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-      - MYSQL_PORT=${DB_PORT}
+      - DB_USER=${DB_USER}
+      - DB_PASS=${DB_PASSWORD}
+      - DB_HOST=db
+      - DB_PORT=${DB_PORT}
+      - DB_NAME=${DB_DATABASE}
       - TOKEN=${TOKEN}
       - TZ=Asia/Tokyo
     depends_on:
