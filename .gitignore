@@ -1,7 +1,8 @@
+# node
 node_modules
-db
+app/dist
 
+# misc
 .DS_Store
-
 .env
 *.log
