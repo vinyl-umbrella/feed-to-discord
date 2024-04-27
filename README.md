@@ -2,7 +2,6 @@
 
 ## 概要
 RSSの更新があれば，discordに記事のURLを投げるbotです．<br/>
-discordがOGP展開してくれるので，URLしか投げません．
 - [x] 複数のサーバに対応
 - [x] 複数のチャンネルに対応
 - [x] スレッドにも対応
@@ -10,6 +9,7 @@ discordがOGP展開してくれるので，URLしか投げません．
 ## 導入方法
 ### .envを設定
 ```
+DB_ROOT_PASSWORD=    # mysqlのrootパスワード
 DB_USER=             # mysqlのユーザ名
 DB_DATABASE=         # mysqlのDB名
 DB_PASSWORD=         # mysqlのパスワード
@@ -23,7 +23,7 @@ docker compose up -d
 ```
 
 ## botコマンド
-- `/register url`: 任意のRSSのURLを登録する
+- `/subscribe url`: 任意のRSSのURLを登録する
 - `/unsubscribe url`: 任意のRSSのURLを登録解除する
 - `/list`: このコマンドを実行したチャンネル(スレッド)の登録済みのRSSを表示する
 - `/listall`: このコマンドを実行したサーバの登録済みのRSSを表示する
