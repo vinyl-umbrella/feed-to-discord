@@ -16,6 +16,8 @@ export default {
       .select(['feed.feed_url', 'notification.channel_id'])
       .innerJoin(Notification, 'notification', 'feed.uuid = notification.feed_id')
       .where('notification.server_id = :serverId', { serverId })
+      .orderBy('notification.channel_id', 'DESC')
+      .addOrderBy('feed.feed_url', 'ASC')
       .getRawMany();
 
     let msg = result.map((i) => `<#${i.notification_channel_id}> ${i.feed_feed_url}`).join('\n');
