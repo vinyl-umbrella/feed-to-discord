@@ -19,7 +19,7 @@ async function main() {
 
   // scrape
   while (true) {
-    await scrape();
+    await scrape().catch((err) => logger.error(err));
     await new Promise((resolve) => setTimeout(resolve, 600000));
   }
 }
@@ -31,6 +31,6 @@ const bot = new Bot(
   }),
 );
 
-main().catch((error) => logger.error(error));
+main();
 
 export { bot };
