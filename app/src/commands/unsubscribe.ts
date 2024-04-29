@@ -44,7 +44,6 @@ export default {
   async execute(interaction: CommandInteraction) {
     const feedUrl = String(interaction.options.get('url')?.value);
     const serverId = interaction.guildId!;
-    const channelId = interaction.channelId;
 
     logger.info(`${serverId} /unsubscribe ${feedUrl}`);
 
@@ -58,7 +57,7 @@ export default {
       return;
     }
 
-    await deleteFeed(feedUrl, channelId);
+    await deleteFeed(feedUrl, serverId);
     await interaction.reply(`${feedUrl} を削除しました`);
   },
 };
