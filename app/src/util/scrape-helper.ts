@@ -48,7 +48,7 @@ async function postToDiscord(
     },
     body: JSON.stringify({
       username: `${sitename}_BOT`,
-      content: `${title}, ${link}`,
+      content: `[${title}](${link})`,
     }),
   });
   if (!res.ok) {
