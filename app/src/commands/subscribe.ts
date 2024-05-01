@@ -60,7 +60,9 @@ async function getDestination(
   // check if webhook is already created by this bot
   if (webhookCollection.filter((hook) => hook.owner!.id === interaction.client.user.id).size > 0) {
     // get the webhook url
-    webhookUrl = webhookCollection.find((hook) => hook.owner!.id === interaction.client.user.id)!.url;
+    webhookUrl = webhookCollection.find(
+      (hook) => hook.owner!.id === interaction.client.user.id,
+    )!.url;
   } else {
     // if not, create new webhook
     let hook = null;

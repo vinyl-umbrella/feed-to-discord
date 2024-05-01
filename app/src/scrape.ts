@@ -23,7 +23,7 @@ async function scrape(): Promise<void> {
   for (const feed of feeds) {
     const parsed = await scrapeFeed(feed.feed_url).catch((err) => {
       logger.error(`failed to fetch ${feed.feed_url}, ${err}`);
-      throw err
+      throw err;
     });
 
     if (!parsed!.items) continue;
