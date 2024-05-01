@@ -26,14 +26,13 @@ async function registerFeed(
     feedData = await AppDataSource.getRepository(Feed).save({ feed_url: feedUrl });
   }
 
+  // insert to notification table
   AppDataSource.getRepository(Notification).save({
     feed_id: feedData.uuid,
     server_id: serverId,
     channel_id: channelId,
     webhook_url: webhookUrl,
   });
-
-  // 3. insert to notification table
 }
 
 // get destination channel and its webhook url
@@ -61,7 +60,7 @@ async function getDestination(
   // check if webhook is already created by this bot
   if (webhookCollection.filter((hook) => hook.owner!.id === interaction.client.user.id).size > 0) {
     // get the webhook url
-    webhookUrl = webhookCollection.first()!.url;
+    webhookUrl = webhookCollection.find((hook) => hook.owner!.id === interaction.client.user.id)!.url;
   } else {
     // if not, create new webhook
     let hook = null;
