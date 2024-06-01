@@ -10,24 +10,21 @@ async function sleep(seconds: number): Promise<void> {
   return new Promise((resolve) => setTimeout(resolve, seconds * 1000));
 }
 
-async function scrapeFeed(url: string): Promise<any> {
-  const parser = new Parser({
+async function fetchFeed(url: string): Promise<any> {
+  const res = await fetch(url, {
     headers: RequestHeaders,
-    timeout: 10000,
   });
 
-  const feed = await parser.parseURL(url);
+async function scrapeFeed(url: string): Promise<any> {
+  const body = await fetchFeed(url);
+  const feed = await FeedParser.parseString(body);
+
   return feed;
 }
 
 async function canParseRSS(url: string): Promise<boolean> {
-  const parser = new Parser({
-    headers: RequestHeaders,
-    timeout: 10000,
-  });
-
   try {
-    await parser.parseURL(url);
+    await scrapeFeed(url);
     return true;
   } catch (e) {
     logger.warn(`${url}, ${e}`);
