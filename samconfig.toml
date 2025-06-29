@@ -1,0 +1,14 @@
+version = 0.1
+[default]
+[default.deploy]
+[default.deploy.parameters]
+stack_name = "rss-discord-bot"
+s3_prefix = "rss-discord-bot"
+region = "ap-northeast-1"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+parameter_overrides = [
+  "DiscordPublicKey=YOUR_DISCORD_PUBLIC_KEY",
+  "DiscordBotToken=YOUR_DISCORD_BOT_TOKEN",
+  "DiscordApplicationId=YOUR_DISCORD_APPLICATION_ID"
+]

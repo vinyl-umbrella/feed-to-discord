@@ -1,8 +1,25 @@
-# node
-node_modules
-app/dist
+# Dependencies
+node_modules/
 
-# misc
-.DS_Store
+# SAM build artifacts
+.aws-sam/
+
+# Environment variables
 .env
+
+# Logs
 *.log
+logs/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+
+# Test
+coverage/
+.nyc_output/

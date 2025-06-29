@@ -1,0 +1,26 @@
+{
+    "name": "rss-discord-bot",
+    "version": "1.0.0",
+    "type": "module",
+    "description": "RSS to Discord Bot using AWS Lambda",
+    "scripts": {
+        "build": "sam build",
+        "deploy": "sam deploy",
+        "fmt": "biome format --write ./src",
+        "lint": "biome lint ./src"
+    },
+    "dependencies": {
+        "@aws-sdk/client-dynamodb": "^3.839.0",
+        "@aws-sdk/client-eventbridge": "^3.839.0",
+        "@aws-sdk/client-lambda": "^3.839.0",
+        "@aws-sdk/client-secrets-manager": "^3.839.0",
+        "@aws-sdk/lib-dynamodb": "^3.839.0",
+        "discord.js": "^14.21.0",
+        "rss-parser": "^3.13.0",
+        "tweetnacl": "^1.0.3"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "2.0.6",
+        "@types/node": "^20.8.0"
+    }
+}

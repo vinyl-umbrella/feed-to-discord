@@ -1,0 +1,169 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: RSS Discord Bot
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: nodejs22.x
+    Layers:
+      - !Ref NodeDependenciesLayer
+    Environment:
+      Variables:
+        FEEDS_TABLE: !Ref FeedsTable
+        DISCORD_SECRETS_ARN: !Ref DiscordSecrets
+        TZ: Asia/Tokyo
+    LoggingConfig:
+      LogFormat: JSON
+
+Parameters:
+  DiscordPublicKey:
+    Type: String
+    Description: Discord application public key
+    NoEcho: true
+  DiscordBotToken:
+    Type: String
+    Description: Discord bot token
+    NoEcho: true
+  DiscordApplicationId:
+    Type: String
+    Description: Discord application ID
+    NoEcho: true
+
+Resources:
+  # Lambda Layer for Node.js dependencies
+  NodeDependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "${AWS::StackName}-node-dependencies"
+      ContentUri: layer/
+      CompatibleRuntimes:
+        - nodejs22.x
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: nodejs22.x
+
+  # Secrets Manager for Discord credentials
+  DiscordSecrets:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Name: !Sub "${AWS::StackName}-discord-secrets"
+      Description: "Discord bot credentials"
+      SecretString: !Sub |
+        {
+          "publicKey": "${DiscordPublicKey}",
+          "botToken": "${DiscordBotToken}",
+          "applicationId": "${DiscordApplicationId}"
+        }
+
+  # DynamoDB table for storing RSS feed subscriptions
+  FeedsTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "${AWS::StackName}-feeds"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: channelId
+          AttributeType: S
+        - AttributeName: feedUrl
+          AttributeType: S
+      KeySchema:
+        - AttributeName: channelId
+          KeyType: HASH
+        - AttributeName: feedUrl
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: feedUrl-index
+          KeySchema:
+            - AttributeName: feedUrl
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+
+  # Lambda function for handling Discord interactions
+  DiscordInteractionFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: discord-interaction.handler
+      Events:
+        DiscordInteraction:
+          Type: Api
+          Properties:
+            Path: /discord/interaction
+            Method: post
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FeedsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref DiscordSecrets
+
+  # Lambda function for fetching RSS feeds
+  FeedFetcherFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: feed-fetcher.handler
+      Events:
+        FeedCheckSchedule:
+          Type: Schedule
+          Properties:
+            Schedule: rate(5 minutes)
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FeedsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref DiscordSecrets
+        - Statement:
+            - Effect: Allow
+              Action:
+                - events:PutEvents
+              Resource: !Sub "arn:aws:events:${AWS::Region}:${AWS::AccountId}:event-bus/default"
+
+  # Lambda function for posting to Discord
+  DiscordPosterFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: discord-poster.handler
+      Events:
+        NewFeedItem:
+          Type: EventBridgeRule
+          Properties:
+            Pattern:
+              source:
+                - "rss-bot"
+              detail-type:
+                - "New Feed Item"
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref FeedsTable
+        - Statement:
+            - Effect: Allow
+              Action:
+                - secretsmanager:GetSecretValue
+              Resource: !Ref DiscordSecrets
+
+Outputs:
+  DiscordInteractionApi:
+    Description: "API Gateway endpoint URL for Discord interactions"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/discord/interaction"
+  FeedsTable:
+    Description: "DynamoDB table for RSS feeds"
+    Value: !Ref FeedsTable
+  DiscordSecretsArn:
+    Description: "ARN of the Discord secrets in Secrets Manager"
+    Value: !Ref DiscordSecrets
+  LambdaFunctions:
+    Description: "Lambda function ARNs"
+    Value: !Sub |
+      DiscordInteraction: ${DiscordInteractionFunction.Arn}
+      FeedFetcher: ${FeedFetcherFunction.Arn}
+      DiscordPoster: ${DiscordPosterFunction.Arn}
