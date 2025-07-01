@@ -42,6 +42,7 @@ export async function handleSubscribeCommand(interaction) {
         flags: DISCORD_FLAGS.EPHEMERAL,
       };
     }
+    console.log("provided url is not subscribed yet");
 
     // Validate RSS feed
     const isValidFeed = await rssService.validateFeed(url);
@@ -51,6 +52,7 @@ export async function handleSubscribeCommand(interaction) {
         flags: DISCORD_FLAGS.EPHEMERAL,
       };
     }
+    console.log("provided url is a valid rss feed");
 
     // Get feed info for title
     let feedTitle = null;
@@ -60,9 +62,11 @@ export async function handleSubscribeCommand(interaction) {
     } catch (error) {
       console.warn("Could not get feed title:", error);
     }
+    console.log("feed title:", feedTitle);
 
     // Add subscription
     await feedService.subscribe(channelId, guildId, url, feedTitle);
+    console.log("subscription added successfully");
 
     return {
       content: `Subscribed to RSS feed: [${feedTitle || "No Title"}](${url})`,
