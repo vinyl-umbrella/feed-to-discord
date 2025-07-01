@@ -1,30 +1,41 @@
-# feed-to-discord
+# RSS Discord Bot
 
-## 概要
-RSSの更新があれば，discordに記事のURLを投げるbotです．<br/>
-- [x] 複数のサーバに対応
-- [x] 複数のチャンネルに対応
-- [x] スレッドにも対応
+Serverless RSS Bot for Discord using AWS Services
 
-## 導入方法
-### .envを設定
-```
-DB_ROOT_PASSWORD=    # mysqlのrootパスワード
-DB_USER=             # mysqlのユーザ名
-DB_DATABASE=         # mysqlのDB名
-DB_PASSWORD=         # mysqlのパスワード
-DB_PORT=             # mysqlのポート番号
-TOKEN=               # discord botのトークン
-```
+## AWS Services
+- Amazon API Gateway
+- AWS Lambda
+- Amazon DynamoDB
+- Amazon EventBridge
+- AWS Secrets Manager
+- AWS CloudFormation
 
-### 起動
+## Setup
+
+### 1. Setup Discord Bot
+
+1. [Discord Developer Portal](https://discord.com/developers/applications)
+2. Create a bot
+3. generate a bot token
+
+### 2. Seup App
+
 ```sh
-docker compose up -d
+cp .env.example .env # and write your Discord bot token
+
+# register bot commands
+source .env && node scripts/register-commands.js
+
+# install dependencies for Lambda layer
+cd layer && npm i
 ```
 
-## botコマンド
-- `/subscribe url`: 任意のRSSのURLを登録する
-- `/unsubscribe url`: 任意のRSSのURLを登録解除する
-- `/list`: このコマンドを実行したチャンネル(スレッド)の登録済みのRSSを表示する
-- `/listall`: このコマンドを実行したサーバの登録済みのRSSを表示する
-- `/help`: ヘルプを表示する
+### 3. Deploy
+```sh
+sam build
+sam deploy
+```
+
+### 4. Set Discord Endpoint URL
+1. Get API Gateway URL from the output of `sam deploy`
+2. Set Interactions Endpoint URL in Discord Developer Portal
