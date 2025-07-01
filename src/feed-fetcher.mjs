@@ -60,7 +60,7 @@ async function checkFeed(feedInfo, rssService, feedService) {
 
       // Update last item date for all subscriptions of this feed
       const newestItem = newItems[newItems.length - 1]; // Last item in chronological order
-      const newestItemDate = new Date(newestItem.pubDate).toISOString();
+      const newestItemDate = new Date(newestItem.pubDate || newestItem.isoDate).toISOString();
       await feedService.updateLastItemDate(feedUrl, newestItemDate);
     }
   } catch (error) {

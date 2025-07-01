@@ -30,8 +30,12 @@ class RSSService {
    */
   #sortItemsByDate(items) {
     return items
-      .filter((item) => item.pubDate)
-      .sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+      .filter((item) => item.pubDate || item.isoDate)
+      .sort((a, b) => {
+        const dateA = new Date(a.pubDate || a.isoDate);
+        const dateB = new Date(b.pubDate || b.isoDate);
+        return dateB - dateA;
+      });
   }
 
   /**
@@ -93,7 +97,7 @@ class RSSService {
 
     // Return items newer than the last item date
     const newItems = sortedItems.filter(
-      (item) => new Date(item.pubDate).toISOString() > lastItemDate,
+      (item) => new Date(item.pubDate || item.isoDate).toISOString() > lastItemDate,
     );
 
     return newItems.reverse(); // Return in chronological order
