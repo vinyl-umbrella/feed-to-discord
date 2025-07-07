@@ -8,7 +8,7 @@ export const handler = async (event) => {
 
   try {
     const eventDetail = event.detail;
-    const { feedUrl, item } = eventDetail;
+    const { feedUrl, feedTitle, item } = eventDetail;
 
     // Get Discord secrets
     const secrets = await getDiscordSecrets();
@@ -30,7 +30,7 @@ export const handler = async (event) => {
     await discordClient.login(secrets.botToken);
 
     // Format the message
-    const message = `**[${item.title || "No Title"}](${item.link || ""})**`;
+    const message = `${feedTitle}\n[${item.title || "No Title"}](${item.link || ""})`;
 
     // Send message to each subscribed channel
     const sendPromises = subscriptions.map((subscription) =>

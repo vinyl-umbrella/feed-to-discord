@@ -55,12 +55,14 @@ async function checkFeed(feedInfo, rssService, feedService) {
     if (newItems.length > 0) {
       // Send new items to EventBridge
       for (const item of newItems) {
-        await sendToEventBridge(feedUrl, item);
+        await sendToEventBridge(feedUrl, feed.title, item);
       }
 
       // Update last item date for all subscriptions of this feed
       const newestItem = newItems[newItems.length - 1]; // Last item in chronological order
-      const newestItemDate = new Date(newestItem.pubDate || newestItem.isoDate).toISOString();
+      const newestItemDate = new Date(
+        newestItem.pubDate || newestItem.isoDate,
+      ).toISOString();
       await feedService.updateLastItemDate(feedUrl, newestItemDate);
     }
   } catch (error) {
@@ -68,10 +70,11 @@ async function checkFeed(feedInfo, rssService, feedService) {
   }
 }
 
-async function sendToEventBridge(feedUrl, item) {
+async function sendToEventBridge(feedUrl, feedTitle, item) {
   try {
     const eventDetail = {
       feedUrl,
+      feedTitle,
       item: {
         title: item.title,
         link: item.link,
