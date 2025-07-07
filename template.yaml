@@ -68,6 +68,8 @@ Resources:
           AttributeType: S
         - AttributeName: feedUrl
           AttributeType: S
+        - AttributeName: guildId
+          AttributeType: S
       KeySchema:
         - AttributeName: channelId
           KeyType: HASH
@@ -77,6 +79,12 @@ Resources:
         - IndexName: feedUrl-index
           KeySchema:
             - AttributeName: feedUrl
+              KeyType: HASH
+          Projection:
+            ProjectionType: ALL
+        - IndexName: guildId-index
+          KeySchema:
+            - AttributeName: guildId
               KeyType: HASH
           Projection:
             ProjectionType: ALL
