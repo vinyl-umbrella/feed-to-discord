@@ -7,6 +7,10 @@ import { CACHE_DURATION } from "../constants.mjs";
 let secretsCache = null;
 let cacheExpiry = null;
 
+/**
+ * Fetches Discord secrets from Secrets Manager. Caches the secrets for a defined duration to avoid frequent calls.
+ * @returns {Promise<Object>} - An object containing Discord secrets
+ */
 export async function getDiscordSecrets() {
   const now = Date.now();
 

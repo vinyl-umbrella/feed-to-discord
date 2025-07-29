@@ -32,6 +32,13 @@ export const handler = async (_) => {
   }
 };
 
+/**
+ * Check a single feed for new items
+ * @param {Object} feedInfo - Contains feedUrl and lastItemDate
+ * @param {RSSService} rssService
+ * @param {FeedSubscriptionService} feedService
+ * @returns {Promise<void>}
+ * */
 async function checkFeed(feedInfo, rssService, feedService) {
   const { feedUrl, lastItemDate } = feedInfo;
 
@@ -70,6 +77,12 @@ async function checkFeed(feedInfo, rssService, feedService) {
   }
 }
 
+/**
+ * Sends a new feed item to EventBridge.
+ * @param {string} feedUrl - The URL of the RSS feed
+ * @param {string} feedTitle - The title of the RSS feed
+ * @param {Object} item - The feed item
+ */
 async function sendToEventBridge(feedUrl, feedTitle, item) {
   try {
     const eventDetail = {

@@ -49,6 +49,13 @@ export const handler = async (event) => {
   }
 };
 
+/**
+ * Sends a message to a Discord channel.
+ * @param {Client} client - The Discord client
+ * @param {string} channelId - The ID of the channel to send the message to
+ * @param {string} message - The message content
+ * @returns {Promise<void>}
+ */
 async function sendToChannel(client, channelId, message) {
   try {
     const channel = await client.channels.fetch(channelId);
