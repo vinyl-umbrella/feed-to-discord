@@ -26,7 +26,7 @@ export async function handleSubscribeCommand(interaction) {
   // Validate URL format
   try {
     new URL(url);
-  } catch (error) {
+  } catch (_error) {
     return {
       content: "Provided URL is not valid.",
       flags: DISCORD_FLAGS.EPHEMERAL,

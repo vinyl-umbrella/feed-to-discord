@@ -65,7 +65,7 @@ class RSSService {
     try {
       const feed = await this.parseFeed(feedUrl);
       return !!feed?.title;
-    } catch (error) {
+    } catch (_error) {
       return false;
     }
   }
@@ -97,7 +97,8 @@ class RSSService {
 
     // Return items newer than the last item date
     const newItems = sortedItems.filter(
-      (item) => new Date(item.pubDate || item.isoDate).toISOString() > lastItemDate,
+      (item) =>
+        new Date(item.pubDate || item.isoDate).toISOString() > lastItemDate,
     );
 
     return newItems.reverse(); // Return in chronological order

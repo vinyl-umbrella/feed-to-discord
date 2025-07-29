@@ -5,7 +5,7 @@ import { DISCORD_FLAGS } from "../constants.mjs";
  * @param {Object} interaction - Discord interaction object
  * @returns {Promise<Object>} - Response data
  */
-export async function handleHelpCommand(interaction) {
+export async function handleHelpCommand(_interaction) {
   return {
     content: `
 \`/list\` - list RSS feeds in this channel
