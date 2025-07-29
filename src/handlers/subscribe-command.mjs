@@ -1,6 +1,6 @@
+import { DISCORD_FLAGS } from "../constants.mjs";
 import { FeedSubscriptionService } from "../services/feed-subscription.mjs";
 import { RSSService } from "../services/rss.mjs";
-import { DISCORD_FLAGS } from "../constants.mjs";
 
 /**
  * `/subscribe`

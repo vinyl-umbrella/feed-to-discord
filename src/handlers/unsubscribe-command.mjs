@@ -1,5 +1,5 @@
-import { FeedSubscriptionService } from "../services/feed-subscription.mjs";
 import { DISCORD_FLAGS } from "../constants.mjs";
+import { FeedSubscriptionService } from "../services/feed-subscription.mjs";
 
 /**
  * `/unsubscribe`

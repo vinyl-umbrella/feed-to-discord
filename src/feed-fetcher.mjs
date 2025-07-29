@@ -2,9 +2,9 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
-import { RSSService } from "./services/rss.mjs";
-import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
 import { EVENT_BRIDGE } from "./constants.mjs";
+import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
+import { RSSService } from "./services/rss.mjs";
 
 const eventBridge = new EventBridgeClient();
 

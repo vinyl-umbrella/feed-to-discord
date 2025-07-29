@@ -1,6 +1,6 @@
 import { Client, GatewayIntentBits } from "discord.js";
-import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
 import { DISCORD_ERROR_CODES } from "./constants.mjs";
+import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
 import { getDiscordSecrets } from "./utils/secrets.mjs";
 
 export const handler = async (event) => {
