@@ -46,7 +46,7 @@ export async function handleUnsubscribeCommand(interaction) {
 }
 
 export const handler = async (event) => {
-  console.log("Unsubscribe command received:", JSON.stringify(event, null, 2));
+  console.log(event);
 
   try {
     return await handleUnsubscribeCommand(event);

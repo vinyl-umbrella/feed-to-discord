@@ -62,7 +62,7 @@ export async function handleSubscribeCommand(interaction) {
     } catch (error) {
       console.warn("Could not get feed title:", error);
     }
-    console.log("feed title:", feedTitle);
+    console.log({ feedTitle: feedTitle });
 
     // Add subscription
     await feedService.subscribe(channelId, guildId, url, feedTitle);
@@ -78,7 +78,7 @@ export async function handleSubscribeCommand(interaction) {
 }
 
 export const handler = async (event) => {
-  console.log("Subscribe command received:", JSON.stringify(event, null, 2));
+  console.log(event);
 
   try {
     return await handleSubscribeCommand(event);

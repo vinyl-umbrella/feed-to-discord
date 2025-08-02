@@ -11,7 +11,7 @@ import {
 import { getDiscordSecrets } from "./utils/secrets.mjs";
 
 export const handler = async (event) => {
-  console.log("Received event:", JSON.stringify(event, null, 2));
+  console.log(event);
 
   try {
     const signature = event.headers["x-signature-ed25519"];
@@ -44,7 +44,7 @@ export const handler = async (event) => {
     // Handle application commands
     if (interaction.type === InteractionType.APPLICATION_COMMAND) {
       const { name } = interaction.data;
-      console.log(`Executed command: ${name}`);
+      console.log({ command: name });
 
       let response;
       try {

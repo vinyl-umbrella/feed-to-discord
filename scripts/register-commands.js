@@ -67,7 +67,7 @@ async function registerCommands() {
         console.log('Successfully reloaded application (/) commands.');
         console.log('Registered commands:');
         commands.forEach(cmd => {
-            console.log(`  - /${cmd.name}: ${cmd.description}`);
+            console.log({name: cmd.name, description: cmd.description});
         });
     } catch (error) {
         console.error('Error registering commands:', error);

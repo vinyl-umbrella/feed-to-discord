@@ -17,7 +17,7 @@ export async function handleHelpCommand(_interaction) {
 }
 
 export const handler = async (event) => {
-  console.log("Help command received:", JSON.stringify(event, null, 2));
+  console.log(event);
 
   try {
     return await handleHelpCommand(event);

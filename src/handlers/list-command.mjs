@@ -49,7 +49,7 @@ export async function handleListCommand(interaction) {
 }
 
 export const handler = async (event) => {
-  console.log("List command received:", JSON.stringify(event, null, 2));
+  console.log(event);
 
   try {
     return await handleListCommand(event);

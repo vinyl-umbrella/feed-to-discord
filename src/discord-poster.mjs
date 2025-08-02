@@ -4,7 +4,7 @@ import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
 import { getDiscordSecrets } from "./utils/secrets.mjs";
 
 export const handler = async (event) => {
-  console.log("Received EventBridge event:", JSON.stringify(event, null, 2));
+  console.log(event);
 
   try {
     const eventDetail = event.detail;
