@@ -120,7 +120,7 @@ Resources:
         FeedCheckSchedule:
           Type: Schedule
           Properties:
-            Schedule: rate(10 minutes)
+            Schedule: rate(15 minutes)
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedsTable
