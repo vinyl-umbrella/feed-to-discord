@@ -39,10 +39,10 @@ Resources:
       LayerName: !Sub "${AWS::StackName}-node-dependencies"
       ContentUri: layer/
       CompatibleRuntimes:
-        - nodejs22.x
+        - nodejs24.x
       RetentionPolicy: Delete
     Metadata:
-      BuildMethod: nodejs22.x
+      BuildMethod: nodejs24.x
 
   # Secrets Manager for Discord credentials
   DiscordSecrets:

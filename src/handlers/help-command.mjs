@@ -1,11 +1,4 @@
-import { DISCORD_FLAGS } from "../constants.mjs";
-
-/**
- * `/help`
- * @param {Object} interaction - Discord interaction object
- * @returns {Promise<Object>} - Response data
- */
-export async function handleHelpCommand(_interaction) {
+export const handler = async (_event) => {
   return {
     content: `
 \`/list\` - list RSS feeds in this channel
@@ -14,18 +7,4 @@ export async function handleHelpCommand(_interaction) {
 \`/unsubscribe <URL>\` - unsubscribe from the RSS feed at the specified URL
 \`/help\` - show command for this bot`,
   };
-}
-
-export const handler = async (event) => {
-  console.log(event);
-
-  try {
-    return await handleHelpCommand(event);
-  } catch (error) {
-    console.error("Error in help command handler:", error);
-    return {
-      content: "An error occurred. Please try again later.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
-  }
 };
