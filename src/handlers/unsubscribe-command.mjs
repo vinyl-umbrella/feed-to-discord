@@ -20,29 +20,24 @@ export async function handleUnsubscribeCommand(interaction) {
     };
   }
 
-  try {
-    // Check if subscription exists for this specific channel
-    const isChannelSubscribed = await feedService.isChannelSubscribed(
-      channelId,
-      url,
-    );
-    if (!isChannelSubscribed) {
-      return {
-        content: "This RSS feed is not subscribed in this channel.",
-        flags: DISCORD_FLAGS.EPHEMERAL,
-      };
-    }
-
-    // Remove subscription
-    await feedService.unsubscribe(channelId, url);
-
+  // Check if subscription exists for this specific channel
+  const isChannelSubscribed = await feedService.isChannelSubscribed(
+    channelId,
+    url,
+  );
+  if (!isChannelSubscribed) {
     return {
-      content: `Unsubscribed from RSS feed: ${url}`,
+      content: "This RSS feed is not subscribed in this channel.",
+      flags: DISCORD_FLAGS.EPHEMERAL,
     };
-  } catch (error) {
-    console.error("Error in unsubscribe command:", error);
-    throw error;
   }
+
+  // Remove subscription
+  await feedService.unsubscribe(channelId, url);
+
+  return {
+    content: `Unsubscribed from RSS feed: ${url}`,
+  };
 }
 
 export const handler = async (event) => {

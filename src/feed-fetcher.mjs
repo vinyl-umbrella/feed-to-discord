@@ -48,66 +48,73 @@ async function checkFeed(feedInfo, rssService, feedService) {
     const feed = await rssService.parseFeed(feedUrl);
     const now = new Date().toISOString();
 
-    // Update last checked time for all subscriptions of this feed
-    await feedService.updateLastChecked(feedUrl, now, feed.title);
+    // Query subscriptions once and reuse for all updates
+    const subscriptions = await feedService.getChannelsByFeed(feedUrl);
+
+    // Build update fields
+    const updateFields = { lastChecked: now };
+    if (feed.title) {
+      updateFields.feedTitle = feed.title;
+    }
 
     if (!feed.items || feed.items.length === 0) {
       console.log(`No items found in feed: ${feedUrl}`);
+      await feedService.updateFeedStatus(subscriptions, updateFields);
       return;
     }
 
     // Get new items using RSSService
-    const newItems = await rssService.getNewItems(feedUrl, lastItemDate);
+    const newItems = rssService.getNewItems(feed, lastItemDate);
 
     if (newItems.length > 0) {
       // Send new items to EventBridge
-      for (const item of newItems) {
-        await sendToEventBridge(feedUrl, feed.title, item);
-      }
+      await sendItemsToEventBridge(feedUrl, feed.title, newItems);
 
-      // Update last item date for all subscriptions of this feed
+      // Include lastItemDate in the same update
       const newestItem = newItems[newItems.length - 1]; // Last item in chronological order
-      const newestItemDate = new Date(
+      updateFields.lastItemDate = new Date(
         newestItem.pubDate || newestItem.isoDate,
       ).toISOString();
-      await feedService.updateLastItemDate(feedUrl, newestItemDate);
     }
+
+    // Single batch update for all fields
+    await feedService.updateFeedStatus(subscriptions, updateFields);
   } catch (error) {
     console.error(`Error checking feed ${feedUrl}:`, error);
   }
 }
 
 /**
- * Sends a new feed item to EventBridge.
+ * Sends new feed items to EventBridge in batches of up to 10.
  * @param {string} feedUrl - The URL of the RSS feed
  * @param {string} feedTitle - The title of the RSS feed
- * @param {Object} item - The feed item
+ * @param {Array} items - The feed items to send
  */
-async function sendToEventBridge(feedUrl, feedTitle, item) {
-  try {
-    const eventDetail = {
-      feedUrl,
-      feedTitle,
-      item: {
-        title: item.title,
-        link: item.link,
-      },
-    };
+async function sendItemsToEventBridge(feedUrl, feedTitle, items) {
+  const MAX_ENTRIES = 10;
 
-    await eventBridge.send(
-      new PutEventsCommand({
-        Entries: [
-          {
-            Source: EVENT_BRIDGE.SOURCE,
-            DetailType: EVENT_BRIDGE.DETAIL_TYPE,
-            Detail: JSON.stringify(eventDetail),
-          },
-        ],
+  for (let i = 0; i < items.length; i += MAX_ENTRIES) {
+    const batch = items.slice(i, i + MAX_ENTRIES);
+    const entries = batch.map((item) => ({
+      Source: EVENT_BRIDGE.SOURCE,
+      DetailType: EVENT_BRIDGE.DETAIL_TYPE,
+      Detail: JSON.stringify({
+        feedUrl,
+        feedTitle,
+        item: {
+          title: item.title,
+          link: item.link,
+        },
       }),
-    );
+    }));
 
-    console.log(`Sent new item to EventBridge: ${item.title}`);
-  } catch (error) {
-    console.error("Error sending to EventBridge:", error);
+    try {
+      await eventBridge.send(new PutEventsCommand({ Entries: entries }));
+      console.log(
+        `Sent ${entries.length} items to EventBridge for feed: ${feedUrl}`,
+      );
+    } catch (error) {
+      console.error("Error sending to EventBridge:", error);
+    }
   }
 }

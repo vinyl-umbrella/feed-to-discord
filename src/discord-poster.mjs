@@ -1,7 +1,8 @@
-import { Client, GatewayIntentBits } from "discord.js";
 import { DISCORD_ERROR_CODES } from "./constants.mjs";
 import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
 import { getDiscordSecrets } from "./utils/secrets.mjs";
+
+const DISCORD_API_BASE = "https://discord.com/api/v10";
 
 export const handler = async (event) => {
   console.log(event);
@@ -22,24 +23,15 @@ export const handler = async (event) => {
       return { statusCode: 200 };
     }
 
-    // Create Discord client
-    const discordClient = new Client({
-      intents: [GatewayIntentBits.Guilds],
-    });
-
-    await discordClient.login(secrets.botToken);
-
     // Format the message
     const message = `${feedTitle}\n[${item.title || "No Title"}](${item.link || ""})`;
 
     // Send message to each subscribed channel
     const sendPromises = subscriptions.map((subscription) =>
-      sendToChannel(discordClient, subscription.channelId, message),
+      sendToChannel(secrets.botToken, subscription.channelId, message),
     );
 
     await Promise.allSettled(sendPromises);
-
-    discordClient.destroy();
 
     console.log(`Sent message to ${subscriptions.length} channels`);
     return { statusCode: 200 };
@@ -50,33 +42,46 @@ export const handler = async (event) => {
 };
 
 /**
- * Sends a message to a Discord channel.
- * @param {Client} client - The Discord client
+ * Sends a message to a Discord channel via REST API.
+ * @param {string} botToken - The Discord bot token
  * @param {string} channelId - The ID of the channel to send the message to
  * @param {string} message - The message content
  * @returns {Promise<void>}
  */
-async function sendToChannel(client, channelId, message) {
+async function sendToChannel(botToken, channelId, message) {
   try {
-    const channel = await client.channels.fetch(channelId);
-    if (!channel) {
-      console.warn(`Channel not found: ${channelId}`);
+    const response = await fetch(
+      `${DISCORD_API_BASE}/channels/${channelId}/messages`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: `Bot ${botToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ content: message }),
+      },
+    );
+
+    if (!response.ok) {
+      const errorBody = await response.json().catch(() => ({}));
+      const errorCode = errorBody.code;
+
+      if (
+        errorCode === DISCORD_ERROR_CODES.MISSING_PERMISSIONS ||
+        errorCode === DISCORD_ERROR_CODES.UNKNOWN_CHANNEL
+      ) {
+        console.log(`Removing invalid subscription for channel: ${channelId}`);
+        // NOTE: In a production environment, you might want to remove the subscription from DynamoDB
+      }
+
+      console.error(
+        `Error sending message to channel ${channelId}: ${response.status} ${JSON.stringify(errorBody)}`,
+      );
       return;
     }
-
-    await channel.send({ content: message });
 
     console.log(`Message sent to channel: ${channelId}`);
   } catch (error) {
     console.error(`Error sending message to channel ${channelId}:`, error);
-
-    // If it's a permission error or channel not found, we might want to remove the subscription
-    if (
-      error.code === DISCORD_ERROR_CODES.MISSING_PERMISSIONS ||
-      error.code === DISCORD_ERROR_CODES.UNKNOWN_CHANNEL
-    ) {
-      console.log(`Removing invalid subscription for channel: ${channelId}`);
-      // NOTE: In a production environment, you might want to remove the subscription from DynamoDB
-    }
   }
 }

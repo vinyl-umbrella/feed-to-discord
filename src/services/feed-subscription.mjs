@@ -17,7 +17,7 @@ const FEEDS_TABLE = process.env.FEEDS_TABLE;
 /**
  * Feed subscription service
  */
-class FeedSubscriptionService {
+export class FeedSubscriptionService {
   /**
    * Get feeds for a specific channel
    * @param {string} channelId
@@ -138,23 +138,30 @@ class FeedSubscriptionService {
    * @returns {Promise<Array>}
    */
   async getAllFeedUrls() {
-    const params = {
-      TableName: FEEDS_TABLE,
-      ProjectionExpression: "feedUrl, lastChecked, lastItemDate",
-    };
-
-    const result = await dynamodb.send(new ScanCommand(params));
-
-    // Group by feedUrl to avoid duplicates
     const uniqueFeeds = {};
-    result.Items.forEach((item) => {
-      if (!uniqueFeeds[item.feedUrl]) {
-        uniqueFeeds[item.feedUrl] = {
-          lastChecked: item.lastChecked,
-          lastItemDate: item.lastItemDate,
-        };
-      }
-    });
+    let lastEvaluatedKey = undefined;
+
+    do {
+      const params = {
+        TableName: FEEDS_TABLE,
+        ProjectionExpression: "feedUrl, lastChecked, lastItemDate",
+        ...(lastEvaluatedKey && { ExclusiveStartKey: lastEvaluatedKey }),
+      };
+
+      const result = await dynamodb.send(new ScanCommand(params));
+
+      // Group by feedUrl to avoid duplicates
+      result.Items.forEach((item) => {
+        if (!uniqueFeeds[item.feedUrl]) {
+          uniqueFeeds[item.feedUrl] = {
+            lastChecked: item.lastChecked,
+            lastItemDate: item.lastItemDate,
+          };
+        }
+      });
+
+      lastEvaluatedKey = result.LastEvaluatedKey;
+    } while (lastEvaluatedKey);
 
     return Object.keys(uniqueFeeds).map((feedUrl) => ({
       feedUrl,
@@ -182,48 +189,31 @@ class FeedSubscriptionService {
   }
 
   /**
-   * Update last checked time for a feed
-   * @param {string} feedUrl
-   * @param {string} timestamp
-   * @param {string} feedTitle
+   * Update feed status (lastChecked, lastItemDate, feedTitle) for given subscriptions
+   * @param {Array} subscriptions - Subscriptions from getChannelsByFeed()
+   * @param {Object} fields - Fields to update { lastChecked?, lastItemDate?, feedTitle? }
    * @returns {Promise<void>}
    */
-  async updateLastChecked(feedUrl, timestamp, feedTitle = null) {
-    const subscriptions = await this.getChannelsByFeed(feedUrl);
+  async updateFeedStatus(subscriptions, fields) {
+    const setClauses = [];
+    const expressionAttributeValues = {};
 
-    const updatePromises = subscriptions.map((sub) => {
-      const updateExpression = feedTitle
-        ? "SET lastChecked = :timestamp, feedTitle = :title"
-        : "SET lastChecked = :timestamp";
+    if (fields.lastChecked !== undefined) {
+      setClauses.push("lastChecked = :lastChecked");
+      expressionAttributeValues[":lastChecked"] = fields.lastChecked;
+    }
+    if (fields.lastItemDate !== undefined) {
+      setClauses.push("lastItemDate = :lastItemDate");
+      expressionAttributeValues[":lastItemDate"] = fields.lastItemDate;
+    }
+    if (fields.feedTitle !== undefined) {
+      setClauses.push("feedTitle = :feedTitle");
+      expressionAttributeValues[":feedTitle"] = fields.feedTitle;
+    }
 
-      const expressionAttributeValues = feedTitle
-        ? { ":timestamp": timestamp, ":title": feedTitle }
-        : { ":timestamp": timestamp };
+    if (setClauses.length === 0) return;
 
-      return dynamodb.send(
-        new UpdateCommand({
-          TableName: FEEDS_TABLE,
-          Key: {
-            channelId: sub.channelId,
-            feedUrl: sub.feedUrl,
-          },
-          UpdateExpression: updateExpression,
-          ExpressionAttributeValues: expressionAttributeValues,
-        }),
-      );
-    });
-
-    await Promise.all(updatePromises);
-  }
-
-  /**
-   * Update last item date for a feed
-   * @param {string} feedUrl
-   * @param {string} timestamp
-   * @returns {Promise<void>}
-   */
-  async updateLastItemDate(feedUrl, timestamp) {
-    const subscriptions = await this.getChannelsByFeed(feedUrl);
+    const updateExpression = `SET ${setClauses.join(", ")}`;
 
     const updatePromises = subscriptions.map((sub) =>
       dynamodb.send(
@@ -233,10 +223,8 @@ class FeedSubscriptionService {
             channelId: sub.channelId,
             feedUrl: sub.feedUrl,
           },
-          UpdateExpression: "SET lastItemDate = :timestamp",
-          ExpressionAttributeValues: {
-            ":timestamp": timestamp,
-          },
+          UpdateExpression: updateExpression,
+          ExpressionAttributeValues: expressionAttributeValues,
         }),
       ),
     );
@@ -244,5 +232,3 @@ class FeedSubscriptionService {
     await Promise.all(updatePromises);
   }
 }
-
-export { FeedSubscriptionService };
