@@ -60,7 +60,7 @@ export const handler = async (event) => {
             response = await handleUnsubscribeCommand(interaction);
             break;
           case "help":
-            response = await handleHelpCommand(interaction);
+            response = handleHelpCommand(interaction);
             break;
           default:
             response = {
