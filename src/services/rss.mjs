@@ -6,7 +6,7 @@ const parser = new Parser();
 /**
  * RSS feed service
  */
-class RSSService {
+export class RSSService {
   /**
    * Fetch RSS feed content
    * @param {string} feedUrl
@@ -19,6 +19,11 @@ class RSSService {
         "User-Agent": RSS.DEFAULT_USER_AGENT,
       },
     });
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error fetching ${feedUrl}: ${response.status} ${response.statusText}`,
+      );
+    }
     return await response.text();
   }
 
@@ -57,28 +62,12 @@ class RSSService {
   }
 
   /**
-   * Validate RSS feed URL
-   * @param {string} feedUrl
-   * @returns {Promise<boolean>}
-   */
-  async validateFeed(feedUrl) {
-    try {
-      const feed = await this.parseFeed(feedUrl);
-      return !!feed?.title;
-    } catch (_error) {
-      return false;
-    }
-  }
-
-  /**
-   * Get new items from feed since last check
-   * @param {string} feedUrl
+   * Get new items from a parsed feed since last check
+   * @param {Object} feed - Parsed feed object from parseFeed()
    * @param {string} lastItemDate
-   * @returns {Promise<Array>}
+   * @returns {Array}
    */
-  async getNewItems(feedUrl, lastItemDate = null) {
-    const feed = await this.parseFeed(feedUrl);
-
+  getNewItems(feed, lastItemDate = null) {
     if (!feed.items || feed.items.length === 0) {
       return [];
     }
@@ -104,5 +93,3 @@ class RSSService {
     return newItems.reverse(); // Return in chronological order
   }
 }
-
-export { RSSService };

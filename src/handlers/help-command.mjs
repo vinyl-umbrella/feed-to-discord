@@ -3,9 +3,9 @@ import { DISCORD_FLAGS } from "../constants.mjs";
 /**
  * `/help`
  * @param {Object} interaction - Discord interaction object
- * @returns {Promise<Object>} - Response data
+ * @returns {Object} - Response data
  */
-export async function handleHelpCommand(_interaction) {
+export function handleHelpCommand(_interaction) {
   return {
     content: `
 \`/list\` - list RSS feeds in this channel
@@ -20,7 +20,7 @@ export const handler = async (event) => {
   console.log(event);
 
   try {
-    return await handleHelpCommand(event);
+    return handleHelpCommand(event);
   } catch (error) {
     console.error("Error in help command handler:", error);
     return {

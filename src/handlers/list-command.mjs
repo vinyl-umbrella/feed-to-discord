@@ -14,38 +14,33 @@ export async function handleListCommand(interaction) {
 
   const showAll = options.find((opt) => opt.name === "all")?.value;
 
-  try {
-    let feeds;
-    if (showAll) {
-      // Get all feeds for the guild
-      feeds = await feedService.getFeedsByGuild(guildId);
-    } else {
-      // Get feeds for this specific channel
-      feeds = await feedService.getFeedsByChannel(channelId);
-    }
-
-    if (feeds.length === 0) {
-      return {
-        content: showAll
-          ? "No feeds in this server."
-          : "No feeds in this channel.",
-      };
-    }
-
-    const feedList = feeds
-      .map((item) => `- [${item.feedTitle || "No Title"}](${item.feedUrl})`)
-      .join("\n");
-    const title = showAll
-      ? "Subscribed RSS Feeds in this Server:"
-      : "Subscribed RSS Feeds in this Channel:";
-
-    return {
-      content: `${title}\n${feedList}`,
-    };
-  } catch (error) {
-    console.error("Error in list command:", error);
-    throw error;
+  let feeds;
+  if (showAll) {
+    // Get all feeds for the guild
+    feeds = await feedService.getFeedsByGuild(guildId);
+  } else {
+    // Get feeds for this specific channel
+    feeds = await feedService.getFeedsByChannel(channelId);
   }
+
+  if (feeds.length === 0) {
+    return {
+      content: showAll
+        ? "No feeds in this server."
+        : "No feeds in this channel.",
+    };
+  }
+
+  const feedList = feeds
+    .map((item) => `- [${item.feedTitle || "No Title"}](${item.feedUrl})`)
+    .join("\n");
+  const title = showAll
+    ? "Subscribed RSS Feeds in this Server:"
+    : "Subscribed RSS Feeds in this Channel:";
+
+  return {
+    content: `${title}\n${feedList}`,
+  };
 }
 
 export const handler = async (event) => {

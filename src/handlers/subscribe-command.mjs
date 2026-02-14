@@ -33,48 +33,44 @@ export async function handleSubscribeCommand(interaction) {
     };
   }
 
-  try {
-    // Check if already subscribed in this server
-    const isAlreadySubscribed = await feedService.isSubscribed(guildId, url);
-    if (isAlreadySubscribed) {
-      return {
-        content: "This RSS feed is already subscribed in this server.",
-        flags: DISCORD_FLAGS.EPHEMERAL,
-      };
-    }
-    console.log("provided url is not subscribed yet");
-
-    // Validate RSS feed
-    const isValidFeed = await rssService.validateFeed(url);
-    if (!isValidFeed) {
-      return {
-        content: "Provided URL is not a valid RSS feed.",
-        flags: DISCORD_FLAGS.EPHEMERAL,
-      };
-    }
-    console.log("provided url is a valid rss feed");
-
-    // Get feed info for title
-    let feedTitle = null;
-    try {
-      const feed = await rssService.parseFeed(url);
-      feedTitle = feed.title;
-    } catch (error) {
-      console.warn("Could not get feed title:", error);
-    }
-    console.log({ feedTitle: feedTitle });
-
-    // Add subscription
-    await feedService.subscribe(channelId, guildId, url, feedTitle);
-    console.log("subscription added successfully");
-
+  // Check if already subscribed in this server
+  const isAlreadySubscribed = await feedService.isSubscribed(guildId, url);
+  if (isAlreadySubscribed) {
     return {
-      content: `Subscribed to RSS feed: [${feedTitle || "No Title"}](${url})`,
+      content: "This RSS feed is already subscribed in this server.",
+      flags: DISCORD_FLAGS.EPHEMERAL,
     };
-  } catch (error) {
-    console.error("Error in subscribe command:", error);
-    throw error;
   }
+  console.log("provided url is not subscribed yet");
+
+  // Validate RSS feed and get title in a single fetch
+  let feed;
+  try {
+    feed = await rssService.parseFeed(url);
+  } catch (_error) {
+    return {
+      content: "Provided URL is not a valid RSS feed.",
+      flags: DISCORD_FLAGS.EPHEMERAL,
+    };
+  }
+  if (!feed?.title) {
+    return {
+      content: "Provided URL is not a valid RSS feed.",
+      flags: DISCORD_FLAGS.EPHEMERAL,
+    };
+  }
+  console.log("provided url is a valid rss feed");
+
+  const feedTitle = feed.title;
+  console.log({ feedTitle });
+
+  // Add subscription
+  await feedService.subscribe(channelId, guildId, url, feedTitle);
+  console.log("subscription added successfully");
+
+  return {
+    content: `Subscribed to RSS feed: [${feedTitle || "No Title"}](${url})`,
+  };
 }
 
 export const handler = async (event) => {
