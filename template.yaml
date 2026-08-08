@@ -97,6 +97,7 @@ Resources:
   DiscordInteractionFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-discord-interaction"
       CodeUri: src/
       Handler: discord-interaction.handler
       Timeout: 10
@@ -118,6 +119,7 @@ Resources:
   InteractionWorkerFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-interaction-worker"
       CodeUri: src/
       Handler: interaction-worker.handler
       Timeout: 60
@@ -134,12 +136,14 @@ Resources:
   FeedFetcherFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-feed-fetcher"
       CodeUri: src/
       Handler: feed-fetcher.handler
       Events:
         FeedCheckSchedule:
           Type: Schedule
           Properties:
+            Name: !Sub "${AWS::StackName}-feed-check"
             Schedule: rate(15 minutes)
       Policies:
         - DynamoDBCrudPolicy:
@@ -159,12 +163,14 @@ Resources:
   DiscordPosterFunction:
     Type: AWS::Serverless::Function
     Properties:
+      FunctionName: !Sub "${AWS::StackName}-discord-poster"
       CodeUri: src/
       Handler: discord-poster.handler
       Events:
         NewFeedItem:
           Type: EventBridgeRule
           Properties:
+            RuleName: !Sub "${AWS::StackName}-new-feed-item"
             Pattern:
               source:
                 - "rss-bot"
