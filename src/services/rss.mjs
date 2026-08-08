@@ -14,17 +14,30 @@ export class RSSService {
    * @private
    */
   async #fetchFeedContent(feedUrl) {
+    // 相手サーバーが遅いと Lambda のタイムアウトまで居座るため必ず打ち切る
     const response = await fetch(feedUrl, {
       headers: {
         "User-Agent": RSS.DEFAULT_USER_AGENT,
       },
+      signal: AbortSignal.timeout(RSS.FETCH_TIMEOUT_MS),
+      redirect: "follow",
     });
     if (!response.ok) {
       throw new Error(
         `HTTP error fetching ${feedUrl}: ${response.status} ${response.statusText}`,
       );
     }
-    return await response.text();
+
+    const declaredLength = Number(response.headers.get("content-length"));
+    if (declaredLength > RSS.MAX_BYTES) {
+      throw new Error(`Feed too large: ${feedUrl} (${declaredLength} bytes)`);
+    }
+
+    const body = await response.text();
+    if (body.length > RSS.MAX_BYTES) {
+      throw new Error(`Feed too large: ${feedUrl} (${body.length} bytes)`);
+    }
+    return body;
   }
 
   /**

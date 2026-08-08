@@ -1,17 +1,12 @@
 import { DISCORD_ERROR_CODES } from "./constants.mjs";
 import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
+import { sendChannelMessage } from "./utils/discord-api.mjs";
 import { getDiscordSecrets } from "./utils/secrets.mjs";
 
-const DISCORD_API_BASE = "https://discord.com/api/v10";
-
 export const handler = async (event) => {
-  console.log(event);
-
   try {
-    const eventDetail = event.detail;
-    const { feedUrl, feedTitle, item } = eventDetail;
+    const { feedUrl, feedTitle, item } = event.detail;
 
-    // Get Discord secrets
     const secrets = await getDiscordSecrets();
 
     // Get all channels subscribed to this feed using the service
@@ -26,9 +21,14 @@ export const handler = async (event) => {
     // Format the message
     const message = `${feedTitle}\n[${item.title || "No Title"}](${item.link || ""})`;
 
-    // Send message to each subscribed channel
     const sendPromises = subscriptions.map((subscription) =>
-      sendToChannel(secrets.botToken, subscription.channelId, message),
+      postToChannel(
+        secrets.botToken,
+        subscription.channelId,
+        message,
+        feedService,
+        feedUrl,
+      ),
     );
 
     await Promise.allSettled(sendPromises);
@@ -42,46 +42,40 @@ export const handler = async (event) => {
 };
 
 /**
- * Sends a message to a Discord channel via REST API.
+ * Sends a message to a Discord channel, pruning the subscription if the
+ * channel no longer exists.
  * @param {string} botToken - The Discord bot token
  * @param {string} channelId - The ID of the channel to send the message to
  * @param {string} message - The message content
+ * @param {FeedSubscriptionService} feedService
+ * @param {string} feedUrl
  * @returns {Promise<void>}
  */
-async function sendToChannel(botToken, channelId, message) {
-  try {
-    const response = await fetch(
-      `${DISCORD_API_BASE}/channels/${channelId}/messages`,
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bot ${botToken}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ content: message }),
-      },
-    );
+async function postToChannel(
+  botToken,
+  channelId,
+  message,
+  feedService,
+  feedUrl,
+) {
+  // 429 のリトライと allowed_mentions の無効化は sendChannelMessage 側で処理される
+  const result = await sendChannelMessage(botToken, channelId, {
+    content: message,
+  });
 
-    if (!response.ok) {
-      const errorBody = await response.json().catch(() => ({}));
-      const errorCode = errorBody.code;
-
-      if (
-        errorCode === DISCORD_ERROR_CODES.MISSING_PERMISSIONS ||
-        errorCode === DISCORD_ERROR_CODES.UNKNOWN_CHANNEL
-      ) {
-        console.log(`Removing invalid subscription for channel: ${channelId}`);
-        // NOTE: In a production environment, you might want to remove the subscription from DynamoDB
-      }
-
-      console.error(
-        `Error sending message to channel ${channelId}: ${response.status} ${JSON.stringify(errorBody)}`,
-      );
-      return;
-    }
-
+  if (result.ok) {
     console.log(`Message sent to channel: ${channelId}`);
-  } catch (error) {
-    console.error(`Error sending message to channel ${channelId}:`, error);
+    return;
+  }
+
+  console.error(
+    `Error sending message to channel ${channelId}: ${result.status} code=${result.code}`,
+  );
+
+  // チャンネル自体が消えている場合のみ購読を削除する。
+  // 権限エラーは一時的なこともあるため残す。
+  if (result.code === DISCORD_ERROR_CODES.UNKNOWN_CHANNEL) {
+    console.log(`Removing subscription for deleted channel: ${channelId}`);
+    await feedService.unsubscribe(channelId, feedUrl);
   }
 }

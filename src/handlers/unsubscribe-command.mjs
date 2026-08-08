@@ -1,4 +1,3 @@
-import { DISCORD_FLAGS } from "../constants.mjs";
 import { FeedSubscriptionService } from "../services/feed-subscription.mjs";
 
 /**
@@ -14,10 +13,7 @@ export async function handleUnsubscribeCommand(interaction) {
   const url = options.find((opt) => opt.name === "url")?.value;
 
   if (!url) {
-    return {
-      content: "URL needed",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "Required option `url` is missing." };
   }
 
   // Check if subscription exists for this specific channel
@@ -26,30 +22,11 @@ export async function handleUnsubscribeCommand(interaction) {
     url,
   );
   if (!isChannelSubscribed) {
-    return {
-      content: "This RSS feed is not subscribed in this channel.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "This RSS feed is not subscribed in this channel." };
   }
 
-  // Remove subscription
   await feedService.unsubscribe(channelId, url);
+  console.log({ unsubscribed: url });
 
-  return {
-    content: `Unsubscribed from RSS feed: ${url}`,
-  };
+  return { content: `Unsubscribed from RSS feed: ${url}` };
 }
-
-export const handler = async (event) => {
-  console.log(event);
-
-  try {
-    return await handleUnsubscribeCommand(event);
-  } catch (error) {
-    console.error("Error in unsubscribe command handler:", error);
-    return {
-      content: "An error occurred while processing your request.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
-  }
-};

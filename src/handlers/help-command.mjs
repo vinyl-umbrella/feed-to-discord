@@ -1,5 +1,3 @@
-import { DISCORD_FLAGS } from "../constants.mjs";
-
 /**
  * `/help`
  * @param {Object} interaction - Discord interaction object
@@ -15,17 +13,3 @@ export function handleHelpCommand(_interaction) {
 \`/help\` - show command for this bot`,
   };
 }
-
-export const handler = async (event) => {
-  console.log(event);
-
-  try {
-    return handleHelpCommand(event);
-  } catch (error) {
-    console.error("Error in help command handler:", error);
-    return {
-      content: "An error occurred. Please try again later.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
-  }
-};

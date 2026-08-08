@@ -2,9 +2,10 @@ import {
   EventBridgeClient,
   PutEventsCommand,
 } from "@aws-sdk/client-eventbridge";
-import { EVENT_BRIDGE } from "./constants.mjs";
+import { EVENT_BRIDGE, FEED_FETCH_CONCURRENCY } from "./constants.mjs";
 import { FeedSubscriptionService } from "./services/feed-subscription.mjs";
 import { RSSService } from "./services/rss.mjs";
+import { mapWithConcurrency } from "./utils/concurrency.mjs";
 
 const eventBridge = new EventBridgeClient();
 
@@ -18,13 +19,17 @@ export const handler = async (_) => {
     // Get all unique feed URLs
     const uniqueFeeds = await feedService.getAllFeedUrls();
 
-    const promises = uniqueFeeds.map((feedInfo) =>
-      checkFeed(feedInfo, rssService, feedService),
+    // 全フィードを同時に取得すると Lambda のタイムアウトと外部負荷が読めないため制限する
+    const results = await mapWithConcurrency(
+      uniqueFeeds,
+      FEED_FETCH_CONCURRENCY,
+      (feedInfo) => checkFeed(feedInfo, rssService, feedService),
     );
 
-    await Promise.allSettled(promises);
-
-    console.log(`Checked ${uniqueFeeds.length} unique feeds`);
+    const failed = results.filter((r) => r.status === "rejected").length;
+    console.log(
+      `Checked ${uniqueFeeds.length} unique feeds (${failed} failed)`,
+    );
     return { statusCode: 200 };
   } catch (error) {
     console.error("Error in feed fetcher:", error);
@@ -67,7 +72,9 @@ async function checkFeed(feedInfo, rssService, feedService) {
     const newItems = rssService.getNewItems(feed, lastItemDate);
 
     if (newItems.length > 0) {
-      // Send new items to EventBridge
+      // NOTE: 配信に失敗したまま lastItemDate を進めると記事を取りこぼすため、
+      // 送信が完全に成功した場合のみカーソルを進める。
+      // 失敗時は throw され、次回の実行で同じ記事が再送される。
       await sendItemsToEventBridge(feedUrl, feed.title, newItems);
 
       // Include lastItemDate in the same update
@@ -81,11 +88,13 @@ async function checkFeed(feedInfo, rssService, feedService) {
     await feedService.updateFeedStatus(subscriptions, updateFields);
   } catch (error) {
     console.error(`Error checking feed ${feedUrl}:`, error);
+    throw error;
   }
 }
 
 /**
  * Sends new feed items to EventBridge in batches of up to 10.
+ * Throws if any entry could not be published.
  * @param {string} feedUrl - The URL of the RSS feed
  * @param {string} feedTitle - The title of the RSS feed
  * @param {Array} items - The feed items to send
@@ -108,13 +117,22 @@ async function sendItemsToEventBridge(feedUrl, feedTitle, items) {
       }),
     }));
 
-    try {
-      await eventBridge.send(new PutEventsCommand({ Entries: entries }));
-      console.log(
-        `Sent ${entries.length} items to EventBridge for feed: ${feedUrl}`,
+    const result = await eventBridge.send(
+      new PutEventsCommand({ Entries: entries }),
+    );
+
+    // 部分失敗 (FailedEntryCount) を見逃すと該当記事だけ静かに消える
+    if (result.FailedEntryCount > 0) {
+      const reasons = result.Entries.filter((e) => e.ErrorCode)
+        .map((e) => `${e.ErrorCode}: ${e.ErrorMessage}`)
+        .join(", ");
+      throw new Error(
+        `Failed to publish ${result.FailedEntryCount}/${entries.length} events for ${feedUrl} (${reasons})`,
       );
-    } catch (error) {
-      console.error("Error sending to EventBridge:", error);
     }
+
+    console.log(
+      `Sent ${entries.length} items to EventBridge for feed: ${feedUrl}`,
+    );
   }
 }
