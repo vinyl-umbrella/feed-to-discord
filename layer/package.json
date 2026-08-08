@@ -3,10 +3,10 @@
     "version": "1.0.0",
     "description": "Dependencies for RSS Discord Bot Lambda functions",
     "dependencies": {
-        "@aws-sdk/client-dynamodb": "^3.839.0",
-        "@aws-sdk/client-eventbridge": "^3.839.0",
-        "@aws-sdk/client-secrets-manager": "^3.839.0",
-        "@aws-sdk/lib-dynamodb": "^3.839.0",
+        "@aws-sdk/client-dynamodb": "^3.995.0",
+        "@aws-sdk/client-eventbridge": "^3.995.0",
+        "@aws-sdk/client-secrets-manager": "^3.995.0",
+        "@aws-sdk/lib-dynamodb": "^3.995.0",
         "rss-parser": "^3.13.0",
         "tweetnacl": "^1.0.3"
     }
