@@ -1,4 +1,4 @@
-import { DISCORD_FLAGS } from "../constants.mjs";
+import { RSS } from "../constants.mjs";
 import { FeedSubscriptionService } from "../services/feed-subscription.mjs";
 import { RSSService } from "../services/rss.mjs";
 
@@ -17,72 +17,44 @@ export async function handleSubscribeCommand(interaction) {
   const url = options.find((opt) => opt.name === "url")?.value;
 
   if (!url) {
-    return {
-      content: "Required option `url` is missing.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "Required option `url` is missing." };
   }
 
-  // Validate URL format
+  // Validate URL format.
+  // 任意の URL を Lambda から取得しに行くため、スキームを制限する
+  let parsedUrl;
   try {
-    new URL(url);
+    parsedUrl = new URL(url);
   } catch (_error) {
-    return {
-      content: "Provided URL is not valid.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "Provided URL is not valid." };
+  }
+  if (!RSS.ALLOWED_PROTOCOLS.includes(parsedUrl.protocol)) {
+    return { content: "Only http/https URLs are supported." };
   }
 
   // Check if already subscribed in this server
   const isAlreadySubscribed = await feedService.isSubscribed(guildId, url);
   if (isAlreadySubscribed) {
-    return {
-      content: "This RSS feed is already subscribed in this server.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "This RSS feed is already subscribed in this server." };
   }
-  console.log("provided url is not subscribed yet");
 
   // Validate RSS feed and get title in a single fetch
   let feed;
   try {
     feed = await rssService.parseFeed(url);
   } catch (_error) {
-    return {
-      content: "Provided URL is not a valid RSS feed.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "Provided URL is not a valid RSS feed." };
   }
   if (!feed?.title) {
-    return {
-      content: "Provided URL is not a valid RSS feed.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
+    return { content: "Provided URL is not a valid RSS feed." };
   }
-  console.log("provided url is a valid rss feed");
 
   const feedTitle = feed.title;
-  console.log({ feedTitle });
 
-  // Add subscription
   await feedService.subscribe(channelId, guildId, url, feedTitle);
-  console.log("subscription added successfully");
+  console.log({ subscribed: url, feedTitle });
 
   return {
-    content: `Subscribed to RSS feed: [${feedTitle || "No Title"}](${url})`,
+    content: `Subscribed to RSS feed: [${feedTitle}](${url})`,
   };
 }
-
-export const handler = async (event) => {
-  console.log(event);
-
-  try {
-    return await handleSubscribeCommand(event);
-  } catch (error) {
-    console.error("Error in subscribe command handler:", error);
-    return {
-      content: "An error occurred while processing your request.",
-      flags: DISCORD_FLAGS.EPHEMERAL,
-    };
-  }
-};

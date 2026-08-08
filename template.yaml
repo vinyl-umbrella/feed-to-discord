@@ -39,10 +39,10 @@ Resources:
       LayerName: !Sub "${AWS::StackName}-node-dependencies"
       ContentUri: layer/
       CompatibleRuntimes:
-        - nodejs22.x
+        - nodejs24.x
       RetentionPolicy: Delete
     Metadata:
-      BuildMethod: nodejs22.x
+      BuildMethod: nodejs24.x
 
   # Secrets Manager for Discord credentials
   DiscordSecrets:
@@ -89,18 +89,38 @@ Resources:
           Projection:
             ProjectionType: ALL
 
-  # Lambda function for handling Discord interactions
+  # Lambda function for handling Discord interactions.
+  # Discord は 3 秒以内の応答を要求するため、この関数は署名検証と受付だけを行い、
+  # 実処理は InteractionWorkerFunction に非同期で委譲する。
+  # 応答を返すまでに AWS API を呼ばずに済むよう、検証用の公開鍵は環境変数で渡す
+  # (Discord の公開鍵は Developer Portal に平文表示される非機密情報)。
   DiscordInteractionFunction:
     Type: AWS::Serverless::Function
     Properties:
       CodeUri: src/
       Handler: discord-interaction.handler
+      Timeout: 10
+      Environment:
+        Variables:
+          INTERACTION_WORKER_FUNCTION: !Ref InteractionWorkerFunction
+          DISCORD_PUBLIC_KEY: !Ref DiscordPublicKey
       Events:
         DiscordInteraction:
           Type: Api
           Properties:
             Path: /discord/interaction
             Method: post
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref InteractionWorkerFunction
+
+  # Lambda function that actually runs deferred slash commands
+  InteractionWorkerFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: src/
+      Handler: interaction-worker.handler
+      Timeout: 60
       Policies:
         - DynamoDBCrudPolicy:
             TableName: !Ref FeedsTable
@@ -151,7 +171,8 @@ Resources:
               detail-type:
                 - "New Feed Item"
       Policies:
-        - DynamoDBReadPolicy:
+        # 削除済みチャンネルの購読を掃除するため書き込みも必要
+        - DynamoDBCrudPolicy:
             TableName: !Ref FeedsTable
         - Statement:
             - Effect: Allow
@@ -173,5 +194,6 @@ Outputs:
     Description: "Lambda function ARNs"
     Value: !Sub |
       DiscordInteraction: ${DiscordInteractionFunction.Arn}
+      InteractionWorker: ${InteractionWorkerFunction.Arn}
       FeedFetcher: ${FeedFetcherFunction.Arn}
       DiscordPoster: ${DiscordPosterFunction.Arn}

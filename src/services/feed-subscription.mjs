@@ -139,7 +139,7 @@ export class FeedSubscriptionService {
    */
   async getAllFeedUrls() {
     const uniqueFeeds = {};
-    let lastEvaluatedKey = undefined;
+    let lastEvaluatedKey;
 
     do {
       const params = {
