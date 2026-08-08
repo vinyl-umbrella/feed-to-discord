@@ -50,7 +50,7 @@ jobs:
       # 毎回 3 つのパラメータを渡さないと Secrets Manager の値が壊れる。
       - name: Deploy
         env:
-          S3_BUCKET: ${{ secrets.AWS_S3_BUCKET }}
+          S3_BUCKET: ${{ secrets.S3_BUCKET }}
           DISCORD_PUBLIC_KEY: ${{ secrets.DISCORD_PUBLIC_KEY }}
           DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
           DISCORD_APPLICATION_ID: ${{ secrets.DISCORD_APPLICATION_ID }}
